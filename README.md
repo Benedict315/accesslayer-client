@@ -1,12 +1,10 @@
 # Access Layer Client
 
-This folder contains the frontend for Access Layer, a Stellar-based creator keys marketplace where fans buy access keys tied to a creator and unlock perks defined by that creator.
-
-Right now the client is intentionally minimal and renders a simple landing page while the product foundations are being set up.
+This repository contains the frontend for Access Layer, a Stellar-native creator keys marketplace where fans buy access keys tied to creators and unlock perks defined by those creators.
 
 ## Purpose
 
-The client will be responsible for:
+The client is responsible for:
 
 - creator and fan onboarding
 - wallet connection and transaction prompts
@@ -23,27 +21,27 @@ The client will be responsible for:
 
 ## Current state
 
-- root app renders a temporary `Access Layer` landing screen
-- old template-specific `coursehub` and `vessel` pages were removed from the app shell
-- web3 integration scaffolding still exists in the codebase and can be reconnected when Stellar wallet flows are introduced
+- the root app renders a branded landing page
+- frontend infrastructure is in place for future marketplace routes
+- older template-era code still needs to be replaced with Stellar-specific flows
 
-## Expected next steps
-
-1. Add a real landing page with creator/fan messaging.
-2. Introduce Stellar wallet connection and network config.
-3. Build creator listing, profile, and key purchase flows.
-4. Add contract integration for reading creator state and submitting buy or sell transactions.
-
-## Commands
+## Local setup
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-To produce a production build:
+## Verification
 
 ```bash
-npm run build
+pnpm lint
+pnpm build
 ```
 
+## Open source workflow
+
+- Read [CONTRIBUTING.md](./CONTRIBUTING.md) before starting work.
+- Browse the maintainer issue inventory in [docs/open-source/issue-backlog.md](./docs/open-source/issue-backlog.md).
+- Use the issue templates in [`.github/ISSUE_TEMPLATE`](./.github/ISSUE_TEMPLATE).
+- Review [SECURITY.md](./SECURITY.md) before reporting vulnerabilities.

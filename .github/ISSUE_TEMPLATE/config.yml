@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+   - name: Contribution Guide
+     url: https://github.com/accesslayerorg/accesslayer-client/blob/main/CONTRIBUTING.md
+     about: Read the contribution workflow, local setup steps, and PR rules before opening work.
+   - name: Issue Backlog
+     url: https://github.com/accesslayerorg/accesslayer-client/blob/main/docs/open-source/issue-backlog.md
+     about: Browse the client sections and scoped maintainer-ready issue inventory.
+   - name: Security Policy
+     url: https://github.com/accesslayerorg/accesslayer-client/blob/main/SECURITY.md
+     about: Report vulnerabilities privately instead of opening a public issue.

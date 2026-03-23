@@ -1,0 +1,30 @@
+name: Documentation update
+description: Request documentation or contributor experience improvements for the client repo.
+title: '[Docs]: '
+labels:
+   - documentation
+body:
+   - type: dropdown
+     id: doc_area
+     attributes:
+        label: Documentation area
+        options:
+           - README
+           - CONTRIBUTING guide
+           - onboarding or setup
+           - issue backlog
+           - code comments or examples
+     validations:
+        required: true
+   - type: textarea
+     id: problem
+     attributes:
+        label: What is missing or unclear?
+     validations:
+        required: true
+   - type: textarea
+     id: proposal
+     attributes:
+        label: Proposed improvement
+     validations:
+        required: true

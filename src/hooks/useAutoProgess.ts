@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type UseAutoProgressOptions = {
 	startAt?: number;
@@ -16,12 +16,18 @@ export function useAutoProgress({
 	const [progress, setProgress] = useState(startAt);
 	const timerRef = useRef<number | null>(null);
 
-	const start = () => {
+	const stop = useCallback(() => {
+		if (timerRef.current !== null) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+	}, []);
+
+	const start = useCallback(() => {
 		if (timerRef.current !== null) return;
 
 		timerRef.current = window.setInterval(() => {
 			setProgress(prev => {
-				console.log(progress);
 				const next = prev + step;
 				if (next >= 100) {
 					stop();
@@ -30,24 +36,17 @@ export function useAutoProgress({
 				return next;
 			});
 		}, intervalMs);
-	};
+	}, [intervalMs, step, stop]);
 
-	const stop = () => {
-		if (timerRef.current !== null) {
-			clearInterval(timerRef.current);
-			timerRef.current = null;
-		}
-	};
-
-	const reset = () => {
+	const reset = useCallback(() => {
 		stop();
 		setProgress(startAt);
-	};
+	}, [startAt, stop]);
 
 	useEffect(() => {
 		if (autoStart) start();
 		return stop;
-	}, []);
+	}, [autoStart, start, stop]);
 
 	return {
 		progress,

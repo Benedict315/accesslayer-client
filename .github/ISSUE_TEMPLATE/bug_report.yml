@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a verified bug in the Access Layer client.
+title: '[Bug]: '
+labels:
+   - bug
+body:
+   - type: markdown
+     attributes:
+        value: |
+           Thanks for reporting a bug. Please confirm this issue belongs in the frontend repo and include enough detail for a contributor to reproduce it.
+   - type: dropdown
+     id: area
+     attributes:
+        label: Area
+        options:
+           - Landing page and marketing UI
+           - Creator onboarding
+           - Marketplace and listings
+           - Wallet and transaction flows
+           - Shared UI or developer experience
+     validations:
+        required: true
+   - type: textarea
+     id: summary
+     attributes:
+        label: Summary
+        description: Describe the bug and the expected behavior.
+     validations:
+        required: true
+   - type: textarea
+     id: steps
+     attributes:
+        label: Reproduction steps
+        description: Provide ordered steps or a failing scenario.
+        placeholder: |
+           1. Open ...
+           2. Connect ...
+           3. Click ...
+     validations:
+        required: true
+   - type: textarea
+     id: evidence
+     attributes:
+        label: Logs, screenshots, or recordings
+        description: Add any supporting context that helps triage.

@@ -62,7 +62,7 @@ const FormFileUpload: React.FC<FileUploadProps> = ({
 				}),
 			});
 		}
-	}, [value]);
+	}, [id, value]);
 
 	const simulateUpload = (file: File) => {
 		// Check file size
