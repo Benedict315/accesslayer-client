@@ -10,7 +10,6 @@ export interface Course {
 	thumbnail?: string;
 	category: string;
 	level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
-	socialHandle?: string;
 }
 
 export interface GetCoursesParams {
