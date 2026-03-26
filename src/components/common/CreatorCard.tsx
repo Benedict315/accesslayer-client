@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import type { Course } from '@/services/course.service';
@@ -5,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { ShoppingCart, Wallet, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import showToast from '@/utils/toast.util';
+import TransactionRetryNotice from '@/components/common/TransactionRetryNotice';
 
 interface CreatorCardProps {
 	creator: Course;
@@ -13,6 +15,32 @@ interface CreatorCardProps {
 
 const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 	const { isConnected } = useAccount();
+	const [transactionState, setTransactionState] = useState<
+		'idle' | 'submitting' | 'failed'
+	>('idle');
+	const hasFailedOnceRef = useRef(false);
+
+	const runPurchaseAttempt = () => {
+		setTransactionState('submitting');
+		showToast.loading(`Purchasing keys for ${creator.title}...`);
+
+		window.setTimeout(() => {
+			toast.remove();
+
+			if (!hasFailedOnceRef.current) {
+				hasFailedOnceRef.current = true;
+				setTransactionState('failed');
+				return;
+			}
+
+			hasFailedOnceRef.current = false;
+			setTransactionState('idle');
+			showToast.transactionSuccess(
+				'Purchase Successful!',
+				`You successfully bought a key for ${creator.title}`
+			);
+		}, 1500);
+	};
 
 	const handleBuy = () => {
 		if (!isConnected) {
@@ -23,14 +51,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 			return;
 		}
 
-		showToast.loading(`Purchasing keys for ${creator.title}...`);
-		// Implementation for contract interaction would go here
-		setTimeout(() => {
-			showToast.transactionSuccess(
-				'Purchase Successful!',
-				`You successfully bought a key for ${creator.title}`
-			);
-		}, 1500);
+		runPurchaseAttempt();
 	};
 
 	return (
@@ -82,6 +103,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 					onClick={handleBuy}
 					variant={isConnected ? 'default' : 'outline'}
 					size="sm"
+					disabled={transactionState === 'submitting'}
 					className={cn(
 						'rounded-xl font-bold',
 						!isConnected &&
@@ -89,7 +111,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 					)}
 				>
 					<ShoppingCart className="mr-2 size-4" />
-					Buy Key
+					{transactionState === 'submitting' ? 'Processing...' : 'Buy Key'}
 				</Button>
 			</div>
 
@@ -98,6 +120,15 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 					<Wallet className="size-3" />
 					Wallet Required
 				</div>
+			)}
+
+			{transactionState === 'failed' && (
+				<TransactionRetryNotice
+					className="mt-4"
+					message="The previous purchase attempt failed before confirmation. Retry the Stellar action to try again."
+					retryLabel="Retry Purchase"
+					onRetry={runPurchaseAttempt}
+				/>
 			)}
 		</div>
 	);
