@@ -88,6 +88,11 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, className }) => {
 						<span>No public handle</span>
 					</div>
 				)}
+
+				{/*  Sparkline placeholder */}
+                    <div className="mt-3">
+                   <div className="h-10 w-full rounded-lg bg-white/10 animate-pulse" />
+            </div>
 			</div>
 
 			<div className="flex items-center justify-between gap-4">
