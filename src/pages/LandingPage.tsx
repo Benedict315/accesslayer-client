@@ -15,6 +15,8 @@ import CreatorLabeledStatRow from '@/components/common/CreatorLabeledStatRow';
 import MiniStatChip from '@/components/common/MiniStatChip';
 import MarketplaceSection from '@/components/common/MarketplaceSection';
 import { ProfileTabPillGroup } from '@/components/common/ProfileTabPill';
+import CreatorBreadcrumb from '@/components/common/CreatorBreadcrumb';
+import CreatorProfileHeader from '@/components/common/CreatorProfileHeader';
 
 const FEATURED_CREATOR_FACTS = [
 	{ label: 'Membership', value: 'Collectors Circle' },
@@ -233,6 +235,20 @@ function LandingPage() {
 				</MarketplaceSection>
 
 				<SectionDivider title="Creator profile pattern" spacing="relaxed" />
+
+				<div className="mb-8 space-y-6">
+					<CreatorBreadcrumb
+						parentLabel="Marketplace"
+						parentHref="/"
+						currentLabel="Alex Rivers Portfolio"
+					/>
+					<CreatorProfileHeader
+						name="Alex Rivers"
+						handle="arivers"
+						isVerified={true}
+						avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+					/>
+				</div>
 
 				<MarketplaceSection
 					spacing="relaxed"
