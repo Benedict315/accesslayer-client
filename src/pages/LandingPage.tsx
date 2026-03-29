@@ -14,6 +14,7 @@ import CreatorProfileInfoGrid from '@/components/common/CreatorProfileInfoGrid';
 import CreatorLabeledStatRow from '@/components/common/CreatorLabeledStatRow';
 import MiniStatChip from '@/components/common/MiniStatChip';
 import MarketplaceSection from '@/components/common/MarketplaceSection';
+import { ProfileTabPillGroup } from '@/components/common/ProfileTabPill';
 
 const FEATURED_CREATOR_FACTS = [
 	{ label: 'Membership', value: 'Collectors Circle' },
@@ -108,6 +109,7 @@ function LandingPage() {
 	const [creators, setCreators] = useState<Course[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState('');
+	const [activeProfileTab, setActiveProfileTab] = useState('overview');
 
 	const trimmedSearchQuery = searchQuery.trim();
 	const hasInvalidSearchInput = /[^a-zA-Z0-9_\s-]/.test(trimmedSearchQuery);
@@ -237,12 +239,23 @@ function LandingPage() {
 					className="grid gap-8 rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-[0_24px_80px_-60px_rgba(8,17,31,0.95)] backdrop-blur-sm md:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start"
 				>
 					<div>
-						<SectionHeading
-							eyebrow="Profile spotlight"
-							title="A reusable profile facts layout for featured creators"
-							className="mb-4"
-						/>
-						<CompactSectionSubtitle className="max-w-xl">
+					<SectionHeading
+						eyebrow="Profile spotlight"
+						title="A reusable profile facts layout for featured creators"
+						className="mb-4"
+					/>
+					<ProfileTabPillGroup
+						tabs={[
+							{ label: 'Overview', value: 'overview' },
+							{ label: 'Creations', value: 'creations' },
+							{ label: 'Collectors', value: 'collectors' },
+							{ label: 'Activity', value: 'activity' },
+						]}
+						activeTab={activeProfileTab}
+						onTabChange={setActiveProfileTab}
+						className="mb-4"
+					/>
+					<CompactSectionSubtitle className="max-w-xl">
 							Use the same subtitle pattern beneath headings, then drop
 							repeated creator facts into one responsive grid that stays
 							tidy on mobile and desktop.
