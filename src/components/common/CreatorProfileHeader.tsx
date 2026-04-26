@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
 import CreatorInitialsAvatar from '@/components/common/CreatorInitialsAvatar';
+import CreatorBio from '@/components/common/CreatorBio';
 
 interface CreatorProfileHeaderProps {
 	name: string;
@@ -12,6 +13,7 @@ interface CreatorProfileHeaderProps {
 	creatorId?: string | number | null;
 	avatarUrl?: string;
 	isVerified?: boolean;
+	bio?: string | null;
 	className?: string;
 }
 
@@ -21,6 +23,7 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
 	creatorId,
 	avatarUrl,
 	isVerified,
+	bio,
 	className,
 }) => {
 	const [copied, setCopied] = useState(false);
@@ -75,6 +78,7 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
 						{isVerified && <VerifiedBadge verified={true} />}
 					</div>
 					<p className="font-jakarta text-lg text-white/50">@{handle}</p>
+					<CreatorBio bio={bio} variant="profile" className="mt-2 max-w-md" />
 				</div>
 			</div>
 
