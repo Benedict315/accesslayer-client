@@ -38,12 +38,12 @@ const TransactionStatusIcon: React.FC<TransactionStatusIconProps> = ({
 			<span
 				aria-label="Transaction pending"
 				className={cn(
-					'inline-flex rounded-full p-1.5',
+					'inline-flex rounded-full p-1.5 motion-safe:animate-pulse motion-reduce:animate-none',
 					statusStyles.pending,
 					className
 				)}
 			>
-				<Clock3 className="size-4 animate-pulse" />
+				<Clock3 className="size-4" />
 			</span>
 		);
 	}
