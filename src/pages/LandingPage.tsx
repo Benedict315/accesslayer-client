@@ -121,6 +121,12 @@ const CREATOR_SCROLL_KEY = 'accesslayer.creator-scrollY';
 const MAX_CREATOR_FETCH_RETRIES = 3;
 const BASE_RETRY_DELAY_MS = 800;
 const PAGE_SIZE = 6;
+const FETCH_RETRY_ACTION_LABEL = 'Try again';
+const FINAL_FETCH_ERROR_COPY =
+	'Unable to load live creators right now. Showing fallback creators.';
+
+const getFetchRetryHelperCopy = (attempt: number, maxAttempts: number) =>
+	`We couldn't load live creators yet. Retrying automatically (attempt ${attempt} of ${maxAttempts}).`;
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'supply-desc';
 
@@ -225,7 +231,7 @@ function LandingPage() {
 				}
 
 				setFinalFetchError(
-					'Unable to load live creators right now. Showing fallback creators.'
+					FINAL_FETCH_ERROR_COPY
 				);
 				setShowRetryBanner(false);
 				setFetchRetryAttempt(0);
@@ -435,8 +441,11 @@ function LandingPage() {
 							{showRetryBanner && (
 								<TransactionRetryNotice
 									title="Loading live creators"
-									message={`Fetch failed, retrying with capped backoff (attempt ${fetchRetryAttempt + 1} of ${MAX_CREATOR_FETCH_RETRIES + 1}).`}
-									retryLabel="Retry now"
+									message={getFetchRetryHelperCopy(
+										fetchRetryAttempt + 1,
+										MAX_CREATOR_FETCH_RETRIES + 1
+									)}
+									retryLabel={FETCH_RETRY_ACTION_LABEL}
 									onRetry={() => setFetchRetryAttempt(0)}
 								/>
 							)}
