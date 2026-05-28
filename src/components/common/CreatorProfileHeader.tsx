@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Check, Share2 } from 'lucide-react';
 import showToast from '@/utils/toast.util';
+import appendUtmParams from '@/utils/utm.utils';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
@@ -37,7 +38,10 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
 	const displayHandle = formatCreatorHandle(handle);
 
 	const handleShare = async () => {
-		const url = window.location.href;
+		let url = window.location.href;
+
+		// Append UTM params when configured (no-op if none configured)
+		url = appendUtmParams(url);
 
 		if (navigator.share) {
 			try {
