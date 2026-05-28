@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import SkipToContent from '../SkipToContent';
@@ -35,7 +35,8 @@ describe('SkipToContent: Keyboard Accessibility', () => {
 			expect(link).toBeInTheDocument();
 
 			// Check that it's positioned off-screen initially
-			const style = window.getComputedStyle(link!);
+			// Get computed style to verify off-screen positioning
+			window.getComputedStyle(link!);
 			// The link should have left: -100% or be absolutely positioned off-screen
 			expect(link).toHaveClass('absolute', '-left-full');
 		});
@@ -178,10 +179,10 @@ describe('SkipToContent: Keyboard Accessibility', () => {
 			const target = document.getElementById(TARGET_ID) as HTMLElement;
 			target.scrollIntoView = scrollIntoViewMock;
 
-			const { container } = render(
+			render(
 				<SkipToContent targetId={TARGET_ID} label={SKIP_LABEL} />
 			);
-			const link = container.querySelector('a') as HTMLElement;
+
 
 			// Tab to skip link and press Enter
 			await user.tab();
