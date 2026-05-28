@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Copy, Check, Share2 } from 'lucide-react';
 import showToast from '@/utils/toast.util';
+import appendUtmParams from '@/utils/utm.utils';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
 import CreatorInitialsAvatar from '@/components/common/CreatorInitialsAvatar';
 import CreatorBio from '@/components/common/CreatorBio';
+import { formatCreatorHandle } from '@/utils/handleDisplay.utils';
 
 interface CreatorProfileHeaderProps {
 	name: string;
@@ -31,13 +33,20 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
 }) => {
 	const [copied, setCopied] = useState(false);
 
+	// Display-normalised handle; raw `handle` is preserved for any equality /
+	// URL construction the caller might do via the prop.
+	const displayHandle = formatCreatorHandle(handle);
+
 	const handleShare = async () => {
-		const url = window.location.href;
+		let url = window.location.href;
+
+		// Append UTM params when configured (no-op if none configured)
+		url = appendUtmParams(url);
 
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: `${name} (@${handle}) on Access Layer`,
+					title: `${name} (${displayHandle || `@${handle}`}) on Access Layer`,
 					url,
 				});
 			} catch (err) {
@@ -97,9 +106,16 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
 							CREATOR_PROFILE_SUBTITLE_WRAP_CLASS_NAME
 						)}
 					>
-						@{handle}
+						{displayHandle || `@${handle}`}
 					</p>
-					<CreatorBio bio={bio} variant="profile" className="mt-2 max-w-md" />
+					{/* #315: profile bio auto-collapses with a Show more / less
+						toggle once long enough. Short bios render unchanged. */}
+					<CreatorBio
+						bio={bio}
+						variant="profile"
+						collapsible
+						className="mt-2 max-w-md"
+					/>
 				</div>
 			</div>
 
