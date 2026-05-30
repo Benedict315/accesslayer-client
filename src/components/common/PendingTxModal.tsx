@@ -11,9 +11,17 @@ import { Button } from '@/components/ui/button';
 import CircularSpinner from '@/components/common/CircularSpinnerProps';
 import { cn } from '@/lib/utils';
 import TransactionHashRow from '@/components/common/TransactionHashRow';
-import { getConfirmationStatus, CONFIRMATION_THRESHOLDS } from '@/utils/transaction.utils';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+	getConfirmationStatus,
+	getConfirmationTone,
+} from '@/utils/transaction.utils';
+import { Tooltip } from '@/components/ui/tooltip';
+
+const confirmationToneClasses = {
+	neutral: 'border-slate-500/30 bg-slate-500/20 text-slate-400',
+	warning: 'border-amber-500/30 bg-amber-500/20 text-amber-300',
+	success: 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400',
+} as const;
 
 export interface PendingTxModalProps {
 	open: boolean;
@@ -53,6 +61,13 @@ const PendingTxModal: React.FC<PendingTxModalProps> = ({
 		if (!next && blockDismissal && isLoading) return;
 		onOpenChange?.(next);
 	};
+
+	const confirmationStatus =
+		confirmations !== undefined ? getConfirmationStatus(confirmations) : undefined;
+	const confirmationTone =
+		confirmationStatus !== undefined
+			? getConfirmationTone(confirmationStatus)
+			: undefined;
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -100,29 +115,19 @@ const PendingTxModal: React.FC<PendingTxModalProps> = ({
 						{description}
 					</DialogDescription>
 					
-					{confirmations !== undefined && (
+					{confirmationStatus !== undefined && confirmationTone !== undefined && (
 						<div className="mt-4 flex flex-col items-center gap-2">
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Badge 
-											variant={confirmations >= CONFIRMATION_THRESHOLDS.CONFIRMED ? "success" : "secondary"}
-											className={cn(
-												"px-3 py-1 text-xs font-bold uppercase tracking-wider",
-												confirmations === 0 && "bg-slate-500/20 text-slate-400 border-slate-500/30",
-												confirmations > 0 && confirmations < CONFIRMATION_THRESHOLDS.CONFIRMED && "bg-amber-500/20 text-amber-300 border-amber-500/30",
-												confirmations >= CONFIRMATION_THRESHOLDS.CONFIRMED && "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-											)}
-										>
-											{getConfirmationStatus(confirmations)}
-										</Badge>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>{confirmations} block confirmations</p>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-							<p className="text-[10px] text-white/40 uppercase tracking-widest font-medium">
+							<Tooltip content={`${confirmations} block confirmations`}>
+								<span
+									className={cn(
+										'inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider',
+										confirmationToneClasses[confirmationTone]
+									)}
+								>
+									{confirmationStatus}
+								</span>
+							</Tooltip>
+							<p className="text-[10px] font-medium uppercase tracking-widest text-white/40">
 								{confirmations} confirmations
 							</p>
 						</div>
