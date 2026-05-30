@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
 import { courseService, type Course } from '@/services/course.service';
 import SkipToContent from '@/components/common/SkipToContent';
@@ -235,9 +235,9 @@ function LandingPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isFilterLoading, setIsFilterLoading] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
+	const PROFILE_TABS = ['overview', 'creations', 'collectors', 'activity'];
 	const [activeProfileTab, setActiveProfileTab] = useState(() => {
 		if (typeof window === 'undefined') return 'overview';
-		const PROFILE_TABS = ['overview', 'creations', 'collectors', 'activity'];
 		const hash = window.location.hash.slice(1);
 		return PROFILE_TABS.includes(hash) ? hash : 'overview';
 	});
@@ -271,6 +271,50 @@ function LandingPage() {
 		return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 	});
 	const pendingScrollRestoreRef = useRef<number | null>(null);
+	const profileTabTouchRef = useRef<HTMLDivElement | null>(null);
+	const touchStartX = useRef<number | null>(null);
+	const touchStartY = useRef<number | null>(null);
+	const touchMoved = useRef(false);
+
+	const handleTouchStart = (e: TouchEvent) => {
+		const t = e.touches[0];
+		touchStartX.current = t.clientX;
+		touchStartY.current = t.clientY;
+		touchMoved.current = false;
+	};
+
+	const handleTouchMove = (e: TouchEvent) => {
+		// mark that a move happened; we don't preventDefault so vertical
+		// scrolling remains native and unaffected.
+		touchMoved.current = true;
+	};
+
+	const handleTouchEnd = (e: TouchEvent) => {
+		if (touchStartX.current == null || touchStartY.current == null) return;
+		if (!touchMoved.current) return;
+		const t = e.changedTouches[0];
+		const dx = t.clientX - touchStartX.current;
+		const dy = t.clientY - touchStartY.current;
+
+		// Only consider mostly-horizontal swipes with a minimum threshold
+		const absDx = Math.abs(dx);
+		const absDy = Math.abs(dy);
+		const SWIPE_THRESHOLD = 50; // pixels
+		if (absDx < SWIPE_THRESHOLD) return;
+		if (absDx < absDy * 1.5) return; // ensure horizontal intent
+
+		const currentIndex = PROFILE_TABS.indexOf(activeProfileTab);
+		if (dx < 0 && currentIndex < PROFILE_TABS.length - 1) {
+			// swipe left -> next
+			setActiveProfileTab(PROFILE_TABS[currentIndex + 1]);
+		} else if (dx > 0 && currentIndex > 0) {
+			// swipe right -> previous
+			setActiveProfileTab(PROFILE_TABS[currentIndex - 1]);
+		}
+		touchStartX.current = null;
+		touchStartY.current = null;
+		touchMoved.current = false;
+	};
 
 	// Use scroll preservation for profile tabs
 	useScrollPreservation(activeProfileTab, {
@@ -818,6 +862,11 @@ function LandingPage() {
 									role="tabpanel"
 									aria-labelledby={`profile-tab-${activeProfileTab}`}
 									tabIndex={0}
+									ref={profileTabTouchRef}
+									onTouchStart={handleTouchStart}
+									onTouchMove={handleTouchMove}
+									onTouchEnd={handleTouchEnd}
+									style={{ touchAction: 'pan-y' }}
 								>
 									<div className="mt-5 flex flex-wrap gap-2">
 										<MiniStatChip
