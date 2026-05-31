@@ -2,7 +2,15 @@ import { useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import type { Course } from '@/services/course.service';
 import { cn } from '@/lib/utils';
-import { ShoppingCart, Link as LinkIcon, TrendingUp, MoreVertical, Copy, Share2, ExternalLink } from 'lucide-react';
+import {
+	ShoppingCart,
+	Link as LinkIcon,
+	TrendingUp,
+	MoreVertical,
+	Copy,
+	Share2,
+	ExternalLink,
+} from 'lucide-react';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -16,8 +24,12 @@ import toast from 'react-hot-toast';
 import showToast from '@/utils/toast.util';
 import { formatCompactNumber } from '@/utils/numberFormat.utils';
 import { formatCreatorKeyPriceDisplay } from '@/utils/keyPriceDisplay.utils';
-import CreatorDropCountdown from '@/components/common/CreatorDropCountdown';
 import { formatCreatorHandle } from '@/utils/handleDisplay.utils';
+import { normalizeCreatorDisplayName } from '@/utils/creatorDisplayName.utils';
+import { getCreatorPriceChartAccessibilityCopy } from '@/utils/creatorPriceChartAccessibility.utils';
+import { formatJoinDate } from '@/utils/formatJoinDate';
+import { useSystemTheme } from '@/utils/useSystemTheme';
+import { Tooltip } from '@/components/ui/tooltip';
 import { AsyncButton } from '@/components/ui/async-button';
 import { useNetworkMismatch } from '@/hooks/useNetworkMismatch';
 import { useTransactionTelemetry } from '@/hooks/useTransactionTelemetry';
@@ -38,6 +50,8 @@ import CreatorListRowDivider from '@/components/common/CreatorListRowDivider';
 import BuyActionHelperText from '@/components/common/BuyActionHelperText';
 import NetworkFeeHint from '@/components/common/NetworkFeeHint';
 import CreatorBio from '@/components/common/CreatorBio';
+import CreatorDropCountdown from '@/components/common/CreatorDropCountdown';
+import CreatorHandleHoverCard from '@/components/common/CreatorHandleHoverCard';
 import { CREATOR_CARD_MEDIA_RADIUS_CLASS } from '@/utils/creatorCardTokens';
 
 interface CreatorCardProps {
@@ -58,27 +72,42 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 	className,
 	isPriceRefreshing = false,
 }) => {
+	const { isDarkMode } = useSystemTheme();
 	// Display-normalised handles. Raw values stay on `creator` for any
 	// equality / URL logic downstream.
 	const displayInstructorHandle =
 		formatCreatorHandle(creator.instructorId) || '@creator';
 	const displaySocialHandle = formatCreatorHandle(creator.socialHandle);
+	const displayCreatorName =
+		normalizeCreatorDisplayName(creator.title) || 'Unnamed creator';
+	const priceChartAccessibility = getCreatorPriceChartAccessibilityCopy({
+		name: displayCreatorName,
+		price: creator.price,
+		priceStroops: creator.priceStroops,
+		change24h: creator.change24h,
+	});
+	const priceChartDescriptionId = `creator-price-chart-description-${creator.id}`;
 	const { isConnected } = useAccount();
-	const { isMismatch: isNetworkMismatch, expectedChainName } = useNetworkMismatch();
+	const { isMismatch: isNetworkMismatch, expectedChainName } =
+		useNetworkMismatch();
 	const [transactionState, setTransactionState] = useState<
 		'idle' | 'submitting' | 'failed' | 'success'
 	>('idle');
 	const [failureDrawerOpen, setFailureDrawerOpen] = useState(false);
-	const [failureDetails, setFailureDetails] = useState<TransactionFailureDetails>({
-		errorMessage: '',
-	});
+	const [failureDetails, setFailureDetails] =
+		useState<TransactionFailureDetails>({
+			errorMessage: '',
+		});
 	const hasFailedOnceRef = useRef(false);
 	const trackTransactionEvent = useTransactionTelemetry();
 
 	const runPurchaseAttempt = () => {
 		setTransactionState('submitting');
-		trackTransactionEvent('tx_submitted', { creatorId: creator.id, creatorTitle: creator.title });
-		showToast.loading(`Purchasing keys for ${creator.title}...`);
+		trackTransactionEvent('tx_submitted', {
+			creatorId: creator.id,
+			creatorTitle: displayCreatorName,
+		});
+		showToast.loading(`Purchasing keys for ${displayCreatorName}...`);
 
 		window.setTimeout(() => {
 			toast.remove();
@@ -87,7 +116,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 				hasFailedOnceRef.current = true;
 				setTransactionState('failed');
 				setFailureDetails({
-					errorMessage: 'Transaction failed: Insufficient balance to complete the purchase.',
+					errorMessage:
+						'Transaction failed: Insufficient balance to complete the purchase.',
 					errorCode: 'ERR_INSUFFICIENT_BALANCE',
 					txHash: '0xabcd1234...failed',
 					developerDetails: {
@@ -103,10 +133,13 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
 			hasFailedOnceRef.current = false;
 			setTransactionState('success');
-			trackTransactionEvent('tx_confirmed', { creatorId: creator.id, creatorTitle: creator.title });
+			trackTransactionEvent('tx_confirmed', {
+				creatorId: creator.id,
+				creatorTitle: displayCreatorName,
+			});
 			showToast.transactionSuccess(
 				'Purchase Successful!',
-				`You successfully bought a key for ${creator.title}`,
+				`You successfully bought a key for ${displayCreatorName}`,
 				'0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
 				'https://stellar.expert/explorer/testnet/tx/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
 			);
@@ -131,7 +164,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 	const handleShare = () => {
 		const url = `${window.location.origin}/creator/${creator.id}`;
 		if (navigator.share) {
-			navigator.share({ title: creator.title, url }).catch(() => {});
+			navigator.share({ title: displayCreatorName, url }).catch(() => {});
 		} else {
 			navigator.clipboard
 				.writeText(url)
@@ -155,7 +188,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 			return;
 		}
 
-		toast.success(`Purchasing keys for ${creator.title}...`, {
+		toast.success(`Purchasing keys for ${displayCreatorName}...`, {
 			duration: 3000,
 		});
 		// Implementation for contract interaction would go here
@@ -172,7 +205,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 			<div className="absolute right-3 top-3 z-20">
 				<DropdownMenu>
 					<DropdownMenuTrigger
-						aria-label={`More actions for ${creator.title}`}
+						aria-label={`More actions for ${displayCreatorName}`}
 						className="flex size-8 items-center justify-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
 					>
 						<MoreVertical className="size-4" aria-hidden="true" />
@@ -182,7 +215,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 						className="w-48 border-white/10 bg-slate-900/95 backdrop-blur-xl"
 					>
 						<DropdownMenuLabel className="text-xs text-white/50">
-							{creator.title}
+							{displayCreatorName}
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator className="bg-white/10" />
 						<DropdownMenuItem
@@ -218,10 +251,13 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 				aria-labelledby={`creator-name-${creator.id}`}
 			>
 				<CreatorInitialsAvatar
-					name={creator.title}
+					name={displayCreatorName}
 					creatorId={creator.id}
 					imageSrc={creator.thumbnail}
-					imageClassName="transition-transform duration-500 motion-reduce:transition-none motion-safe:md:group-hover:scale-[1.03] motion-reduce:md:group-hover:scale-100"
+					imageClassName={cn(
+						'transition-transform duration-500 motion-reduce:transition-none motion-safe:md:group-hover:scale-[1.03] motion-reduce:md:group-hover:scale-100',
+						isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+					)}
 				/>
 				<div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 transition-opacity duration-300 motion-reduce:transition-none motion-safe:md:group-hover:opacity-100 motion-reduce:md:group-hover:opacity-100" />
 				{creator.volume24h !== undefined && (
@@ -246,7 +282,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 						id={`creator-name-${creator.id}`}
 						className="font-jakarta text-lg font-bold text-white"
 					>
-						{creator.title}
+						{displayCreatorName}
 					</h3>
 					<VerifiedBadge
 						verified={Boolean(creator.isVerified)}
@@ -257,10 +293,22 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 					{isRecentlyActive && <RecentActivityBadge />}
 				</div>
 				<p className="marketplace-label-muted font-jakarta text-sm">
-					{displayInstructorHandle}
+					<CreatorHandleHoverCard
+						handle={displayInstructorHandle}
+						volume24h={creator.volume24h}
+						change24h={creator.change24h}
+						creatorShareSupply={creator.creatorShareSupply}
+						isVerified={creator.isVerified}
+					>
+						{displayInstructorHandle}
+					</CreatorHandleHoverCard>
 				</p>
 
-				<CreatorBio bio={creator.description} variant="card" className="mt-2" />
+				<CreatorBio
+					bio={creator.description}
+					variant="card"
+					className="mt-2"
+				/>
 
 				{creator.nextDropAt ? (
 					<CreatorDropCountdown nextDropAt={creator.nextDropAt} />
@@ -269,7 +317,15 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 				{creator.socialHandle ? (
 					<div className="marketplace-label-muted mt-2 flex items-center gap-1.5 text-xs">
 						<LinkIcon className="creator-action-icon text-amber-500/70" />
-						<span className="truncate">{displaySocialHandle}</span>
+						<CreatorHandleHoverCard
+							handle={displaySocialHandle}
+							volume24h={creator.volume24h}
+							change24h={creator.change24h}
+							creatorShareSupply={creator.creatorShareSupply}
+							isVerified={creator.isVerified}
+						>
+							<span className="truncate">{displaySocialHandle}</span>
+						</CreatorHandleHoverCard>
 					</div>
 				) : (
 					<div
@@ -285,7 +341,29 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
 				{/*  Sparkline placeholder */}
 				<div className="mt-3">
-					<div className="h-10 w-full rounded-lg bg-white/10 animate-pulse" />
+					<div
+						role="img"
+						aria-label={priceChartAccessibility.summary}
+						aria-describedby={priceChartDescriptionId}
+						className="h-10 w-full rounded-lg bg-white/10 animate-pulse"
+					/>
+					<table id={priceChartDescriptionId} className="sr-only">
+						<caption>{priceChartAccessibility.summary}</caption>
+						<thead>
+							<tr>
+								<th scope="col">Point</th>
+								<th scope="col">Key price</th>
+							</tr>
+						</thead>
+						<tbody>
+							{priceChartAccessibility.points.map(point => (
+								<tr key={point.label}>
+									<th scope="row">{point.label}</th>
+									<td>{point.value}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 
 				<div className="mt-3 flex flex-wrap gap-2">
@@ -298,6 +376,31 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 				</div>
 				<CreatorListRowDivider className="my-4" />
 				<div className="mt-3 space-y-2">
+					{creator.joinedAt && (
+						<CardMetaRow
+							label="Join Date"
+							value={
+								<Tooltip
+									content={
+										<p>
+											{new Date(creator.joinedAt).toLocaleDateString(
+												'en-US',
+												{
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric',
+												}
+											)}
+										</p>
+									}
+								>
+									<span className="text-white/75 cursor-default truncate">
+										{formatJoinDate(creator.joinedAt)}
+									</span>
+								</Tooltip>
+							}
+						/>
+					)}
 					<CardMetaRow
 						label={
 							<span className="inline-flex items-center gap-1.5">
@@ -311,9 +414,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 								: 'No public handle'
 						}
 						valueTitle={
-							creator.socialHandle
-								? displaySocialHandle
-								: undefined
+							creator.socialHandle ? displaySocialHandle : undefined
 						}
 						valueClassName={
 							creator.socialHandle
@@ -373,7 +474,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 					id={`creator-card-actions-label-${creator.id}`}
 					className="sr-only"
 				>
-					Purchase actions for {creator.title}
+					Purchase actions for {displayCreatorName}
 				</span>
 				<NetworkFeeHint className="shrink-0" />
 				<AsyncButton
