@@ -8,6 +8,7 @@ import StickyFilterBar from '@/components/common/StickyFilterBar';
 import CreatorCard from '@/components/common/CreatorCard';
 import {
 	CreatorGridSkeleton,
+	CreatorHoldingsListSkeleton,
 	CreatorProfileHeaderSkeleton,
 } from '@/components/common/CreatorSkeleton';
 import EmptyState from '@/components/common/EmptyState';
@@ -906,40 +907,44 @@ function LandingPage() {
 								</p>
 							</div>
 						</div>
-						<div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-							{heldKeyPositions
-								.filter(
-									position =>
-										position.quantity && position.quantity > 0
-								)
-								.map(position => {
-									const creator = creators.find(
-										item => item.id === position.creatorId
-									);
-									return (
-										<div
-											key={position.creatorId}
-											className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-										>
-											<div className="truncate text-sm font-bold text-white">
-												{creator?.title ?? 'Unknown creator'}
+						{isLoading ? (
+							<CreatorHoldingsListSkeleton className="mt-6" />
+						) : (
+							<div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+								{heldKeyPositions
+									.filter(
+										position =>
+											position.quantity && position.quantity > 0
+									)
+									.map(position => {
+										const creator = creators.find(
+											item => item.id === position.creatorId
+										);
+										return (
+											<div
+												key={position.creatorId}
+												className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+											>
+												<div className="truncate text-sm font-bold text-white">
+													{creator?.title ?? 'Unknown creator'}
+												</div>
+												<div className="mt-1 text-xs text-white/55">
+													{formatNumber(position.quantity)} keys ·{' '}
+													{position.isPriceLoading
+														? 'Refreshing price'
+														: position.isPriceStale
+															? 'Price stale'
+															: formatDisplayKeyPrice(
+																	resolveCreatorKeyPriceStroops(
+																		position
+																	)
+																)}
+												</div>
 											</div>
-											<div className="mt-1 text-xs text-white/55">
-												{formatNumber(position.quantity)} keys ·{' '}
-												{position.isPriceLoading
-													? 'Refreshing price'
-													: position.isPriceStale
-														? 'Price stale'
-														: formatDisplayKeyPrice(
-																resolveCreatorKeyPriceStroops(
-																	position
-																)
-															)}
-											</div>
-										</div>
-									);
-								})}
-						</div>
+										);
+									})}
+							</div>
+						)}
 					</MarketplaceSection>
 
 					<SectionDivider
