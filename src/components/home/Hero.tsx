@@ -40,26 +40,42 @@ export default function Hero() {
 
 			{/* Bottom-to-top fade */}
 			<div
-				className="absolute inset-x-0 bottom-0 h-[45%] backdrop-blur-[2px]"
+				className="absolute inset-x-0 bottom-0 h-[45%]  backdrop-blur-[150px]"
 				style={{
-					maskImage: 'linear-gradient(to top, black 0%, black 20%, transparent 100%)',
-					WebkitMaskImage: 'linear-gradient(to top, black 0%, black 20%, transparent 100%)',
+					maskImage:
+						'linear-gradient(to top, black 0%, black 20%, transparent 100%)',
+					WebkitMaskImage:
+						'linear-gradient(to top, black 0%, black 20%, transparent 100%)',
 				}}
 			/>
 			<div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-[#04090f]/30 via-[#04090f]/5 to-transparent" />
 
 			{/* Main content */}
-			<div className="relative bottom-0 z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+			<div className="relative bottom-12 md:bottom-0 z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+				{/* Eyebrow */}
+				<div className="flex items-center gap-3">
+					<span className="h-px w-8 bg-white/25" />
+					<img
+						src="/icons/key.svg"
+						alt=""
+						className="size-2.5 opacity-35"
+					/>
+					<span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/45">
+						Marketplace built on Stellar
+					</span>
+					<span className="h-px w-8 bg-white/25" />
+				</div>
+
 				{/* Headline */}
-				<h1 className="mt-6 font-pt-serif text-[clamp(2.4rem,5.5vw,3.8rem)] font-normal leading-[1.1] text-white">
+				<h1 className="mt-6 font-pt-serif text-[clamp(1.95rem,5.5vw,3.5rem)] font-normal leading-[1.1] text-white">
 					<span>
 						Own a piece{' '}
 						<img
 							src="/icons/key.svg"
 							alt=""
-							className="hidden size-[0.75em] -translate-y-[0.1em] align-middle opacity-50 sm:inline"
-						/>
-						{' '}of every
+							className="hidden size-[0.75em] -translate-y-[0.1em] align-middle opacity-50 .sm:inline"
+						/>{' '}
+						of every
 					</span>
 					<br />
 					<span className="italic text-white/75">
@@ -75,7 +91,18 @@ export default function Hero() {
 
 				{/* Search */}
 				<form onSubmit={handleSearch} className="mt-10 w-full max-w-md">
-					<div className="flex items-center rounded-full border border-white/15 bg-white/[0.18] backdrop-blur-sm">
+					<div
+						className="flex items-center rounded-full border border-white/10 bg-[#04090f]/65 backdrop-blur-md"
+						style={{
+							boxShadow: `
+								0 1px 2px rgba(0,0,0,0.20),
+								0 4px 8px rgba(0,0,0,0.18),
+								0 12px 24px rgba(0,0,0,0.14),
+								0 24px 48px rgba(0,0,0,0.10),
+								inset 0 1px 0 rgba(255,255,255,0.06)
+							`,
+						}}
+					>
 						<input
 							type="text"
 							value={query}
@@ -95,7 +122,7 @@ export default function Hero() {
 			</div>
 
 			{/* Infinite scrolling stats strip */}
-			<div className="absolute inset-x-0 bottom-20 z-10 overflow-hidden">
+			<div className="absolute inset-x-0 bottom-15 z-10 overflow-hidden">
 				<div className="flex w-max animate-marquee items-center gap-0">
 					{[...stats, ...stats].map((item, i) => (
 						<div key={i} className="flex items-center gap-6 px-6">
