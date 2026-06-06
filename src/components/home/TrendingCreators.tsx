@@ -131,22 +131,28 @@ export default function TrendingCreators() {
 		>
 			<div className="mx-auto max-w-5xl">
 				{/* Header */}
-				<div ref={headingRef} className="scroll-reveal flex items-end justify-between">
-					<div>
-						<p className="font-mono text-[9px] uppercase tracking-[0.2em] text-gray-400">
-							Marketplace
-						</p>
-						<h2 className="mt-2 font-pt-serif text-[clamp(1.6rem,4vw,2.4rem)] font-normal text-gray-900">
-							Trending creators
-						</h2>
+				<div ref={headingRef} className="scroll-reveal">
+					{/* Eyebrow */}
+					<div className="flex items-center gap-2">
+						<span className="size-1.5 rounded-full bg-gray-300" />
+						<span className="font-jakarta text-sm text-gray-400">Trending now</span>
 					</div>
-					<Link
-						to="/marketplace"
-						className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-gray-400 transition-colors hover:text-gray-900"
-					>
-						View all
-						<ArrowRight className="size-3.5" />
-					</Link>
+
+					{/* Heading + View all */}
+					<div className="mt-3 flex items-end justify-between gap-6">
+						<h2 className="font-pt-serif text-[clamp(1.6rem,3.5vw,2.4rem)] font-normal leading-[1.15]">
+							<span className="text-gray-900">Creators worth holding,</span>
+							<br />
+							<span className="text-gray-400">before the price tells you so.</span>
+						</h2>
+						<Link
+							to="/marketplace"
+							className="mb-1 flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-gray-400 transition-colors hover:text-gray-900"
+						>
+							View all
+							<ArrowRight className="size-3.5" />
+						</Link>
+					</div>
 				</div>
 
 				{/* Grid */}
