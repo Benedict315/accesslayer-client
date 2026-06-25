@@ -25,7 +25,7 @@ function NotFoundPage() {
 						Access Layer
 					</p>
 					<h1 className="mt-4 max-w-3xl font-grotesque text-5xl font-black leading-none tracking-tight sm:text-6xl md:text-7xl">
-						This marketplace path is not live yet.
+						This marketplace path was not found.
 					</h1>
 					<p className="mt-6 max-w-2xl font-jakarta text-base leading-8 text-white/70 sm:text-lg">
 						The creator key route you opened does not exist. Return to the
