@@ -56,6 +56,12 @@ export interface Course {
 	 */
 	launchPenaltyBps?: number;
 	/**
+	 * Per-wallet delay between consecutive buys, expressed in Stellar ledgers
+	 * (~5 seconds per ledger) as returned by the contract's `set_buy_cooldown`.
+	 * The dashboard displays this converted to minutes.
+	 */
+	buyCooldownLedgers?: number;
+	/**
 	 * Proposal quorum threshold in basis points (100–5000 = 1%–50%).
 	 * Minimum holder participation required for a governance proposal to pass.
 	 */
