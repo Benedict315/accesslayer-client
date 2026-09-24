@@ -94,6 +94,20 @@ export interface Course {
 	deprecationReason?: string | null;
 }
 
+export interface CurveMilestone {
+	supplyThreshold: number;
+	exponent: number;
+	simulatedPrice: number;
+	exponentChange?: string;
+}
+
+export interface GraduatedCurveConfig {
+	keyId?: string;
+	hasGraduatedCurve?: boolean;
+	defaultExponent?: number;
+	milestones?: CurveMilestone[];
+}
+
 export type CourseSortOption =
 	'volume_desc' | 'price_asc' | 'price_desc' | 'newest';
 
@@ -373,6 +387,18 @@ class CourseService extends BaseApiService {
 			const response = await this.api.get<APIResponse<Record<string, number>>>(
 				`/keys/${keyId}/simulate`,
 				{ params: { quantity } }
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get graduated curve config - GET /keys/:keyId/curve-config
+	async getCurveConfig(keyId: string): Promise<GraduatedCurveConfig> {
+		try {
+			const response = await this.api.get<APIResponse<GraduatedCurveConfig>>(
+				`/keys/${keyId}/curve-config`
 			);
 			return response.data.data;
 		} catch (error) {
