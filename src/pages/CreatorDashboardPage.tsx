@@ -7,6 +7,7 @@ import AuctionSetupPanel from '@/components/common/AuctionSetupPanel';
 import LaunchPenaltyPanel from '@/components/common/LaunchPenaltyPanel';
 import MaxBuyQuantityPanel from '@/components/common/MaxBuyQuantityPanel';
 import QuorumSettingsPanel from '@/components/common/QuorumSettingsPanel';
+import GraduatedCurvePanel from '@/components/common/GraduatedCurvePanel';
 import {
 	useCancelAuctionMutation,
 	useConfigureAuctionMutation,
@@ -14,6 +15,7 @@ import {
 	useSetLaunchPenaltyMutation,
 	useSetMaxBuyQuantityMutation,
 	useSetQuorumBpsMutation,
+	useConfigureGraduatedCurveMutation,
 } from '@/hooks/useCreatorContractActions';
 import { formatDisplayKeyPrice, resolveCreatorKeyPriceStroops } from '@/utils/keyPriceDisplay.utils';
 import { formatNumber } from '@/utils/numberFormat.utils';
@@ -44,6 +46,7 @@ export default function CreatorDashboardPage() {
 	const setLaunchPenalty = useSetLaunchPenaltyMutation(id);
 	const setMaxBuyQuantity = useSetMaxBuyQuantityMutation(id);
 	const setQuorumBps = useSetQuorumBpsMutation(id);
+	const configureGraduatedCurve = useConfigureGraduatedCurveMutation(id);
 
 	const setTab = (value: string) => {
 		setSearchParams(
@@ -199,6 +202,19 @@ export default function CreatorDashboardPage() {
 								maxBuyQuantity={creator.maxBuyQuantity}
 								isSubmitting={setMaxBuyQuantity.isPending}
 								onSubmit={value => setMaxBuyQuantity.mutate(value)}
+							/>
+						</section>
+
+						<section className={CARD_CLASS} data-testid="graduated-curve-section">
+							<h2 className="mb-1 font-grotesque text-xl font-black tracking-tight">
+								Graduated Curve
+							</h2>
+							<p className="mb-6 text-sm text-white/50">
+								Configure up to five supply milestones and the exponent applied to each tier.
+							</p>
+							<GraduatedCurvePanel
+								isSubmitting={configureGraduatedCurve.isPending}
+								onSubmit={milestones => configureGraduatedCurve.mutate(milestones)}
 							/>
 						</section>
 					</div>
