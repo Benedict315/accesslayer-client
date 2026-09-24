@@ -3,12 +3,17 @@ import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import HomePage from './pages/HomePage';
+import CreatorDetailPage from './pages/CreatorDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const router = createBrowserRouter([
 	{
 		path: '/',
 		element: <HomePage />,
+	},
+	{
+		path: '/creator/:id',
+		element: <CreatorDetailPage />,
 	},
 	{
 		path: '*',
