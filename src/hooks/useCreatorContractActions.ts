@@ -4,6 +4,7 @@ import { cacheManager } from '@/utils/cache.utils';
 import showToast from '@/utils/toast.util';
 import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import type { CreatorMetadataChange } from '@/utils/creatorMetadata.utils';
+import type { GraduatedCurveMilestone } from '@/components/common/GraduatedCurvePanel';
 
 /**
  * Creator-facing contract calls issued from the dashboard tabs
@@ -31,6 +32,8 @@ export interface AuctionConfigInput {
 	price: number;
 	supply: number;
 }
+
+export type GraduatedCurveConfigInput = GraduatedCurveMilestone[];
 
 export function useUpdateMetadataMutation(creatorId: string) {
 	const queryClient = useQueryClient();
@@ -166,6 +169,25 @@ export function useSetQuorumBpsMutation(creatorId: string) {
 				queryKey: queryKeys.creators.detail(creatorId),
 			});
 			showToast.success('Quorum threshold updated');
+		},
+	});
+}
+
+export function useConfigureGraduatedCurveMutation(creatorId: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationKey: ['contract', 'configure_graduated_curve', creatorId],
+		mutationFn: (milestones: GraduatedCurveConfigInput) =>
+			submitContractCall('configure_graduated_curve', { creatorId, milestones }),
+		onError: error => {
+			showToast.error(getSignatureErrorMessage(error));
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.creators.detail(creatorId),
+			});
+			showToast.success('Graduated curve configured');
 		},
 	});
 }
