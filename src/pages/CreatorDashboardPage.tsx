@@ -7,6 +7,7 @@ import AuctionSetupPanel from '@/components/common/AuctionSetupPanel';
 import LaunchPenaltyPanel from '@/components/common/LaunchPenaltyPanel';
 import MaxBuyQuantityPanel from '@/components/common/MaxBuyQuantityPanel';
 import QuorumSettingsPanel from '@/components/common/QuorumSettingsPanel';
+import BuyCooldownPanel from '@/components/common/BuyCooldownPanel';
 import {
 	useCancelAuctionMutation,
 	useConfigureAuctionMutation,
@@ -14,6 +15,7 @@ import {
 	useSetLaunchPenaltyMutation,
 	useSetMaxBuyQuantityMutation,
 	useSetQuorumBpsMutation,
+	useSetBuyCooldownMutation,
 } from '@/hooks/useCreatorContractActions';
 import { formatDisplayKeyPrice, resolveCreatorKeyPriceStroops } from '@/utils/keyPriceDisplay.utils';
 import { formatNumber } from '@/utils/numberFormat.utils';
@@ -44,6 +46,7 @@ export default function CreatorDashboardPage() {
 	const setLaunchPenalty = useSetLaunchPenaltyMutation(id);
 	const setMaxBuyQuantity = useSetMaxBuyQuantityMutation(id);
 	const setQuorumBps = useSetQuorumBpsMutation(id);
+	const setBuyCooldown = useSetBuyCooldownMutation(id);
 
 	const setTab = (value: string) => {
 		setSearchParams(
@@ -185,6 +188,23 @@ export default function CreatorDashboardPage() {
 								launchPenaltyBps={creator.launchPenaltyBps}
 								isSubmitting={setLaunchPenalty.isPending}
 								onSubmit={penaltyBps => setLaunchPenalty.mutate(penaltyBps)}
+							/>
+						</section>
+
+						<section className={CARD_CLASS} data-testid="buy-cooldown-section">
+							<h2 className="mb-1 font-grotesque text-xl font-black tracking-tight">
+								Buy Cooldown
+							</h2>
+							<p className="mb-6 text-sm text-white/50">
+								Set a delay in minutes between consecutive buys from the same
+								wallet.
+							</p>
+							<BuyCooldownPanel
+								buyCooldownLedgers={creator.buyCooldownLedgers}
+								isSubmitting={setBuyCooldown.isPending}
+								onSubmit={cooldownLedgers =>
+									setBuyCooldown.mutate(cooldownLedgers)
+								}
 							/>
 						</section>
 
