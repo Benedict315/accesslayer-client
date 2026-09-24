@@ -8,6 +8,7 @@ import LaunchPenaltyPanel from '@/components/common/LaunchPenaltyPanel';
 import MaxBuyQuantityPanel from '@/components/common/MaxBuyQuantityPanel';
 import QuorumSettingsPanel from '@/components/common/QuorumSettingsPanel';
 import GraduatedCurvePanel from '@/components/common/GraduatedCurvePanel';
+import BuyCooldownPanel from '@/components/common/BuyCooldownPanel';
 import {
 	useCancelAuctionMutation,
 	useConfigureAuctionMutation,
@@ -16,9 +17,12 @@ import {
 	useSetMaxBuyQuantityMutation,
 	useSetQuorumBpsMutation,
 	useConfigureGraduatedCurveMutation,
+	useSetBuyCooldownMutation,
 } from '@/hooks/useCreatorContractActions';
 import { formatDisplayKeyPrice, resolveCreatorKeyPriceStroops } from '@/utils/keyPriceDisplay.utils';
 import { formatNumber } from '@/utils/numberFormat.utils';
+
+import { GraduatedCurveMilestoneChart } from '@/components/common/GraduatedCurveMilestoneChart';
 
 const TABS = [
 	{ label: 'Overview', value: 'overview' },
@@ -47,6 +51,7 @@ export default function CreatorDashboardPage() {
 	const setMaxBuyQuantity = useSetMaxBuyQuantityMutation(id);
 	const setQuorumBps = useSetQuorumBpsMutation(id);
 	const configureGraduatedCurve = useConfigureGraduatedCurveMutation(id);
+	const setBuyCooldown = useSetBuyCooldownMutation(id);
 
 	const setTab = (value: string) => {
 		setSearchParams(
@@ -97,41 +102,48 @@ export default function CreatorDashboardPage() {
 				<ProfileTabPillGroup tabs={TABS} activeTab={activeTab} onTabChange={setTab} />
 
 				{activeTab === 'overview' && (
-					<section
-						className={CARD_CLASS}
-						id="profile-panel-overview"
-						role="tabpanel"
-						aria-labelledby="profile-tab-overview"
-						data-testid="dashboard-overview-panel"
-					>
-						<h2 className="mb-4 font-grotesque text-xl font-black tracking-tight">
-							Overview
-						</h2>
-						<dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-							<div>
-								<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
-									Current price
-								</dt>
-								<dd className="mt-1 font-jakarta font-bold">
-									{formatDisplayKeyPrice(resolveCreatorKeyPriceStroops(creator))}
-								</dd>
-							</div>
-							<div>
-								<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
-									Key supply
-								</dt>
-								<dd className="mt-1 font-jakarta font-bold">
-									{formatNumber(creator.creatorShareSupply ?? 100)}
-								</dd>
-							</div>
-							<div>
-								<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
-									Category
-								</dt>
-								<dd className="mt-1 font-jakarta font-bold">{creator.category}</dd>
-							</div>
-						</dl>
-					</section>
+					<div className="space-y-8">
+						<section
+							className={CARD_CLASS}
+							id="profile-panel-overview"
+							role="tabpanel"
+							aria-labelledby="profile-tab-overview"
+							data-testid="dashboard-overview-panel"
+						>
+							<h2 className="mb-4 font-grotesque text-xl font-black tracking-tight">
+								Overview
+							</h2>
+							<dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+								<div>
+									<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
+										Current price
+									</dt>
+									<dd className="mt-1 font-jakarta font-bold">
+										{formatDisplayKeyPrice(resolveCreatorKeyPriceStroops(creator))}
+									</dd>
+								</div>
+								<div>
+									<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
+										Key supply
+									</dt>
+									<dd className="mt-1 font-jakarta font-bold">
+										{formatNumber(creator.creatorShareSupply ?? 100)}
+									</dd>
+								</div>
+								<div>
+									<dt className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-white/40">
+										Category
+									</dt>
+									<dd className="mt-1 font-jakarta font-bold">{creator.category}</dd>
+								</div>
+							</dl>
+						</section>
+
+						<GraduatedCurveMilestoneChart
+							keyId={id}
+							currentSupply={creator.creatorShareSupply ?? 100}
+						/>
+					</div>
 				)}
 
 				{activeTab === 'settings' && (
@@ -188,6 +200,23 @@ export default function CreatorDashboardPage() {
 								launchPenaltyBps={creator.launchPenaltyBps}
 								isSubmitting={setLaunchPenalty.isPending}
 								onSubmit={penaltyBps => setLaunchPenalty.mutate(penaltyBps)}
+							/>
+						</section>
+
+						<section className={CARD_CLASS} data-testid="buy-cooldown-section">
+							<h2 className="mb-1 font-grotesque text-xl font-black tracking-tight">
+								Buy Cooldown
+							</h2>
+							<p className="mb-6 text-sm text-white/50">
+								Set a delay in minutes between consecutive buys from the same
+								wallet.
+							</p>
+							<BuyCooldownPanel
+								buyCooldownLedgers={creator.buyCooldownLedgers}
+								isSubmitting={setBuyCooldown.isPending}
+								onSubmit={cooldownLedgers =>
+									setBuyCooldown.mutate(cooldownLedgers)
+								}
 							/>
 						</section>
 

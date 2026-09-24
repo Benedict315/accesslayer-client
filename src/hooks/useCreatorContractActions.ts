@@ -9,7 +9,8 @@ import type { GraduatedCurveMilestone } from '@/components/common/GraduatedCurve
 /**
  * Creator-facing contract calls issued from the dashboard tabs
  * (`update_metadata` — #818, `configure_auction` / `cancel_auction` — #816,
- * `set_launch_penalty`, `set_max_buy_quantity`, `set_quorum_bps` — #828).
+ * `set_launch_penalty`, `set_max_buy_quantity`, `set_quorum_bps` — #828,
+ * `set_buy_cooldown` — #889).
  *
  * The on-chain wiring is not in the client yet, so each mutation simulates
  * signing latency and resolves. On success the creator detail query is
@@ -124,6 +125,28 @@ export function useSetMaxBuyQuantityMutation(creatorId: string) {
 				queryKey: queryKeys.creators.detail(creatorId),
 			});
 			showToast.success('Max buy quantity updated');
+		},
+	});
+}
+
+export function useSetBuyCooldownMutation(creatorId: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationKey: ['contract', 'set_buy_cooldown', creatorId],
+		mutationFn: (cooldownLedgers: number) =>
+			submitContractCall('set_buy_cooldown', { creatorId, cooldownLedgers }),
+		onError: error => {
+			showToast.error(getSignatureErrorMessage(error));
+		},
+		onSuccess: () => {
+			// Drop the 30s course cache entry so the refetch below returns the
+			// freshly committed cooldown and the panel reflects it immediately.
+			cacheManager.invalidate(`course_${creatorId}`);
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.creators.detail(creatorId),
+			});
+			showToast.success('Buy cooldown updated');
 		},
 	});
 }

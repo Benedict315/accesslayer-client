@@ -27,6 +27,8 @@ export const queryKeys = {
 			['creators', creatorId, 'activity'] as const,
 		twap: (creatorId: string) =>
 			['creators', creatorId, 'twap', '24h'] as const,
+		curveConfig: (creatorId: string) =>
+			['creators', creatorId, 'curve-config'] as const,
 	},
 	wallet: {
 		holdings: (address: string) => ['wallet', address, 'holdings'] as const,
@@ -37,6 +39,10 @@ export const queryKeys = {
 	notifications: {
 		all: () => ['notifications'] as const,
 		list: (userId: string) => ['notifications', userId, 'list'] as const,
+	},
+	alerts: {
+		all: () => ['alerts'] as const,
+		active: (userId: string) => ['alerts', userId, 'active'] as const,
 	},
 	leaderboard: {
 		all: () => ['leaderboard'] as const,

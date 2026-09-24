@@ -56,6 +56,12 @@ export interface Course {
 	 */
 	launchPenaltyBps?: number;
 	/**
+	 * Per-wallet delay between consecutive buys, expressed in Stellar ledgers
+	 * (~5 seconds per ledger) as returned by the contract's `set_buy_cooldown`.
+	 * The dashboard displays this converted to minutes.
+	 */
+	buyCooldownLedgers?: number;
+	/**
 	 * Proposal quorum threshold in basis points (100–5000 = 1%–50%).
 	 * Minimum holder participation required for a governance proposal to pass.
 	 */
@@ -86,6 +92,20 @@ export interface Course {
 	deprecated?: boolean;
 	/** Optional human-readable reason surfaced in the deprecation notice. */
 	deprecationReason?: string | null;
+}
+
+export interface CurveMilestone {
+	supplyThreshold: number;
+	exponent: number;
+	simulatedPrice: number;
+	exponentChange?: string;
+}
+
+export interface GraduatedCurveConfig {
+	keyId?: string;
+	hasGraduatedCurve?: boolean;
+	defaultExponent?: number;
+	milestones?: CurveMilestone[];
 }
 
 export type CourseSortOption =
@@ -367,6 +387,18 @@ class CourseService extends BaseApiService {
 			const response = await this.api.get<APIResponse<Record<string, number>>>(
 				`/keys/${keyId}/simulate`,
 				{ params: { quantity } }
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get graduated curve config - GET /keys/:keyId/curve-config
+	async getCurveConfig(keyId: string): Promise<GraduatedCurveConfig> {
+		try {
+			const response = await this.api.get<APIResponse<GraduatedCurveConfig>>(
+				`/keys/${keyId}/curve-config`
 			);
 			return response.data.data;
 		} catch (error) {

@@ -95,13 +95,14 @@ import { useNavigationTiming } from '@/hooks/useNavigationTiming';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { CREATOR_LIST_SORT_LAYOUT_TRANSITION } from '@/utils/creatorListSortTransition';
 import { creatorListKey } from '@/utils/creatorListKey.utils';
-import { Check, ChevronDown, Copy, RefreshCw } from 'lucide-react';
+import { Check, ChevronDown, Copy, RefreshCw, Share2 } from 'lucide-react';
 import ClearedFiltersEmptyState from '@/components/common/ClearedFiltersEmptyState';
 import CreatorListPagination from '@/components/common/CreatorListPagination';
 import CreatorListGroupSeparator from '@/components/common/CreatorListGroupSeparator';
 import MarketplaceSidebar from '@/components/common/MarketplaceSidebar';
 import { copyTextToClipboard } from '@/utils/clipboard.utils';
 import SelfFreezeDialog from '@/components/common/SelfFreezeDialog';
+import SharePortfolioModal from '@/components/common/SharePortfolioModal';
 
 const FEATURED_CREATOR_FACTS = [
 	{ label: 'Membership', value: 'Collectors Circle' },
@@ -275,6 +276,7 @@ function LandingPage() {
 	const [tradeSide, setTradeSide] = useState<TradeSide>('buy');
 	const [tradeDialogOpen, setTradeDialogOpen] = useState(false);
 	const [tradeSubmitting, setTradeSubmitting] = useState(false);
+	const [sharePortfolioOpen, setSharePortfolioOpen] = useState(false);
 	const [selfFreezeDialog, setSelfFreezeDialog] = useState<{
 		action: SelfFreezeAction;
 		position: HeldKeyPosition;
@@ -1544,9 +1546,9 @@ function LandingPage() {
 							pnlSummary.totalInvested > 0 && (
 								<div
 									data-testid="pnl-summary-card"
-									className="mt-4 rounded-xl border border-white/10 bg-slate-950/30 px-4 py-3"
+									className="mt-4 flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-950/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
 								>
-									<div className="flex items-center gap-6 text-sm">
+									<div className="flex flex-wrap items-center gap-6 text-sm">
 										<div>
 											<span className="text-white/45">
 												Total Invested
@@ -1585,6 +1587,15 @@ function LandingPage() {
 											</span>
 										</div>
 									</div>
+									<button
+										type="button"
+										data-testid="share-performance-btn"
+										onClick={() => setSharePortfolioOpen(true)}
+										className="inline-flex items-center gap-2 self-start rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:border-white/30 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/50 sm:self-auto cursor-pointer"
+									>
+										<Share2 className="size-3.5 text-amber-300" aria-hidden="true" />
+										<span>Share Performance</span>
+									</button>
 								</div>
 							)}
 						{isLoading ? (
@@ -2019,6 +2030,14 @@ function LandingPage() {
 			<KeyboardShortcutsHelp
 				open={shortcutsHelpOpen}
 				onOpenChange={setShortcutsHelpOpen}
+			/>
+			<SharePortfolioModal
+				open={sharePortfolioOpen}
+				onOpenChange={setSharePortfolioOpen}
+				pnlSummary={pnlSummary}
+				walletAddress={activeWalletAddress}
+				heldPositions={heldKeyPositions}
+				creators={holdingsCreators.length > 0 ? holdingsCreators : creators}
 			/>
 			<ScrollToTop />
 			<IdleRefreshPrompt
