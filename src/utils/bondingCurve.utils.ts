@@ -14,6 +14,14 @@ export interface BondingCurveData {
 }
 
 /**
+ * Bonding curve parameters for calculating prices and costs.
+ * Compatible with the existing simulation and pricing utilities.
+ */
+export interface BondingCurveParams {
+	milestones: Omit<BondingCurveMilestone, 'priceXLM'>[];
+}
+
+/**
  * Default graduated bonding curve configuration.
  * Prices increase in steps at specific supply milestones.
  */
@@ -191,4 +199,43 @@ export function findMilestoneRange(
 	}
 
 	return null;
+}
+
+/**
+ * Default bonding curve parameters for use across the application.
+ */
+export const DEFAULT_BONDING_CURVE_PARAMS: BondingCurveParams = {
+	milestones: DEFAULT_MILESTONES,
+};
+
+/**
+ * Alias for calculatePriceAtSupply to match the expected API name
+ * used by simulation utilities.
+ */
+export function computeBondingCurvePrice(
+	supply: number,
+	params: BondingCurveParams = DEFAULT_BONDING_CURVE_PARAMS
+): number {
+	return calculatePriceAtSupply(supply, params.milestones);
+}
+
+/**
+ * Computes the total cost to buy a quantity of keys from the current supply.
+ * Uses the bonding curve to calculate the price at each step and sums the costs.
+ */
+export function computeBuyCost(
+	currentSupply: number,
+	quantity: number,
+	params: BondingCurveParams = DEFAULT_BONDING_CURVE_PARAMS
+): number {
+	if (quantity <= 0) return 0;
+	if (currentSupply < 0) return 0;
+
+	let totalCost = 0;
+	for (let i = 0; i < quantity; i++) {
+		const supplyAtStep = currentSupply + i;
+		totalCost += computeBondingCurvePrice(supplyAtStep, params);
+	}
+
+	return totalCost;
 }

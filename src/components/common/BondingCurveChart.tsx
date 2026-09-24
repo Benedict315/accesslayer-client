@@ -21,12 +21,19 @@ import {
 import { formatDisplayKeyPrice } from '@/utils/keyPriceDisplay.utils';
 import { formatCompactNumber } from '@/utils/numberFormat.utils';
 
+export interface BondingCurveDataPoint {
+	supply: number;
+	priceXLM: number;
+}
+
 interface BondingCurveChartProps {
 	currentSupply: number;
 	currentPriceStroops: number;
 	buyQuantity?: number;
 	className?: string;
 	customMilestones?: Omit<BondingCurveMilestone, 'priceXLM'>[];
+	data?: BondingCurveDataPoint[];
+	height?: number;
 }
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { priceStroops: number; supply: number; label?: string } }> }) => {
@@ -53,7 +60,64 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 	buyQuantity = 0,
 	className,
 	customMilestones,
+	data: externalData,
+	height = 300,
 }) => {
+	// If external data is provided (e.g., from GraduatedCurvePanel), use it directly
+	if (externalData) {
+		return (
+			<div className={cn('w-full', className)}>
+				<div style={{ height: `${height}px` }} className="w-full">
+					<ResponsiveContainer width="100%" height="100%">
+						<LineChart
+							data={externalData}
+							margin={{
+								top: 20,
+								right: 30,
+								left: 20,
+								bottom: 60,
+							}}
+						>
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="rgba(255, 255, 255, 0.1)"
+								vertical={false}
+							/>
+							<XAxis
+								dataKey="supply"
+								stroke="#94a3b8"
+								tick={{ fill: '#94a3b8', fontSize: 12 }}
+								tickLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+								axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+								tickFormatter={(value: number) => formatCompactNumber(value)}
+								angle={-45}
+								textAnchor="end"
+								height={60}
+							/>
+							<YAxis
+								stroke="#94a3b8"
+								tick={{ fill: '#94a3b8', fontSize: 12 }}
+								tickLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+								axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+								tickFormatter={(value: number) => formatDisplayKeyPrice(value * 10_000_000)}
+								width={80}
+							/>
+							<Tooltip content={<CustomTooltip />} />
+							<Line
+								type="monotone"
+								dataKey="priceXLM"
+								stroke="#f59e0b"
+								strokeWidth={2}
+								dot={false}
+								activeDot={{ r: 6, fill: '#f59e0b', stroke: '#1e293b', strokeWidth: 2 }}
+							/>
+						</LineChart>
+					</ResponsiveContainer>
+				</div>
+			</div>
+		);
+	}
+
 	const bondingCurveData = generateBondingCurveData(
 		currentSupply,
 		currentPriceStroops,
@@ -81,7 +145,7 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 
 	return (
 		<div className={cn('w-full', className)}>
-			<div className="h-[300px] w-full">
+			<div style={{ height: `${height}px` }} className="w-full">
 				<ResponsiveContainer width="100%" height="100%">
 					<LineChart
 						data={chartDataWithMilestones}
