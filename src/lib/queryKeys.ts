@@ -29,6 +29,11 @@ export const queryKeys = {
 			['creators', creatorId, 'twap', '24h'] as const,
 		curveConfig: (creatorId: string) =>
 			['creators', creatorId, 'curve-config'] as const,
+		discovery: {
+			all: () => ['creators', 'discovery'] as const,
+			trending: () => ['creators', 'discovery', 'trending'] as const,
+			newListings: () => ['creators', 'discovery', 'newListings'] as const,
+		},
 	},
 	wallet: {
 		holdings: (address: string) => ['wallet', address, 'holdings'] as const,
