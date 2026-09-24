@@ -280,4 +280,5 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 	);
 };
 
+export { BondingCurveChart };
 export default BondingCurveChart;
