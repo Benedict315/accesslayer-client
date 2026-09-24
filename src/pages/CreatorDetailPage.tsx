@@ -30,9 +30,12 @@ import WatchlistButton from '@/components/common/WatchlistButton';
 import { useNavigationTiming } from '@/hooks/useNavigationTiming';
 import { useKeyHolders } from '@/hooks/useKeyHolders';
 import { useProfileStore } from '@/hooks/useProfileStore';
-import { useWalletHoldings } from '@/hooks/useWallet';
+import { useWalletHoldings, useTradeMutation } from '@/hooks/useWallet';
 import CoCreatorSection from '@/components/creator/CoCreatorSection';
 import ShareTwitterButton from '@/components/common/ShareTwitterButton';
+import TradeDialog from '@/components/common/TradeDialog';
+import showToast from '@/utils/toast.util';
+import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyTwap } from '@/hooks/useKeyTwap';
@@ -99,6 +102,43 @@ function CreatorDetailPageContent() {
 		isFetching,
 		() => refetch()
 	);
+
+	const [buyDialogOpen, setBuyDialogOpen] = useState(false);
+	const [tradeSubmitting, setTradeSubmitting] = useState(false);
+	const tradeMutation = useTradeMutation(userAddress ?? 'demo-wallet');
+
+	const handleConfirmBuy = async (
+		amount: number,
+		_pricePreview?: unknown,
+		slippage?: { maxPriceStroops: number | null } | null
+	) => {
+		setTradeSubmitting(true);
+		try {
+			showToast.loading(
+				`Submitting buy for ${amount} key${amount === 1 ? '' : 's'}...`
+			);
+			await tradeMutation.mutateAsync({
+				creatorId: id || '',
+				amount,
+				priceStroops: creator
+					? resolveCreatorKeyPriceStroops(creator)
+					: null,
+				price: creator?.price,
+				maxPriceStroops: slippage?.maxPriceStroops ?? null,
+			});
+			showToast.transactionSuccess(
+				'Trade confirmed',
+				`Bought ${formatNumber(amount)} key${amount === 1 ? '' : 's'} from ${
+					creator?.title || 'Creator'
+				}`
+			);
+			setBuyDialogOpen(false);
+		} catch (error) {
+			showToast.error(getSignatureErrorMessage(error));
+		} finally {
+			setTradeSubmitting(false);
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -260,6 +300,7 @@ function CreatorDetailPageContent() {
 					<Button
 						disabled={isKeyDeprecated(creator)}
 						data-testid="key-detail-buy-button"
+						onClick={() => setBuyDialogOpen(true)}
 						variant={isKeyDeprecated(creator) ? 'outline' : 'default'}
 						className="rounded-xl font-bold"
 					>
@@ -399,8 +440,11 @@ function CreatorDetailPageContent() {
 					totalPaidToCoCreator={creator.totalPaidToCoCreator}
 					totalPaidToCreator={creator.totalPaidToCreator}
 				/>
-				{/* Activity Feed */}
-				<div className="rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 shadow-2xl backdrop-blur-md md:p-8">
+				{/* Key Holders */}
+				<div
+					data-testid="creator-holders-container"
+					className="rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 shadow-2xl backdrop-blur-md md:p-8"
+				>
 					<h2 className="font-grotesque text-xl font-black tracking-tight text-white mb-6">
 						Key Holders
 					</h2>
@@ -419,6 +463,22 @@ function CreatorDetailPageContent() {
 					</h2>
 					<CreatorActivityFeed creatorId={creator.id} />
 				</div>
+				{creator && (
+					<TradeDialog
+						open={buyDialogOpen}
+						side="buy"
+						creatorName={creator.title || creator.name || 'Creator'}
+						availableHoldings={holdingsCount}
+						keyPriceStroops={resolveCreatorKeyPriceStroops(creator)}
+						currentSupply={creator.creatorShareSupply}
+						maxBuyQuantity={creator.maxBuyQuantity}
+						launchPenaltyBps={creator.launchPenaltyBps}
+						onOpenChange={setBuyDialogOpen}
+						onConfirm={handleConfirmBuy}
+						isSubmitting={tradeSubmitting}
+						requireConfirmation={true}
+					/>
+				)}
 			</div>
 		</main>
 	);
