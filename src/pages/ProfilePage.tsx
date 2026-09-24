@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { BarChart2, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router';
+import { BarChart2, Clock, Coins } from 'lucide-react';
 import ReferralLinkPanel from '@/components/common/ReferralLinkPanel';
 import TradeHistoryTable from '@/components/common/TradeHistoryTable';
+import ProtocolRevenueClaim from '@/components/common/ProtocolRevenueClaim';
 import { ProfileTabPillGroup } from '@/components/common/ProfileTabPill';
 import { useProfileStore } from '@/hooks/useProfileStore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const TABS = [
 	{ label: 'Holdings', value: 'holdings', icon: <BarChart2 /> },
+	{ label: 'Staking', value: 'staking', icon: <Coins /> },
 	{ label: 'Trade History', value: 'trade-history', icon: <Clock /> },
 ];
 
@@ -25,8 +28,29 @@ const keys = [
 
 export default function ProfilePage() {
 	const profile = useProfileStore(state => state.profile);
-	const [activeTab, setActiveTab] = useState('holdings');
+	const [searchParams, setSearchParams] = useSearchParams();
+	const requestedTab = searchParams.get('tab');
+	const [activeTabState, setActiveTabState] = useState(
+		requestedTab === 'staking' || requestedTab === 'trade-history'
+			? requestedTab
+			: 'holdings'
+	);
+	const activeTab = TABS.some(tab => tab.value === requestedTab)
+		? (requestedTab as string)
+		: activeTabState;
 	useDocumentTitle('My Portfolio — AccessLayer');
+
+	const handleTabChange = (value: string) => {
+		setActiveTabState(value);
+		setSearchParams(
+			previous => {
+				const next = new URLSearchParams(previous);
+				next.set('tab', value);
+				return next;
+			},
+			{ replace: true }
+		);
+	};
 
 	return (
 		<main className="min-h-screen bg-[#06111f] px-6 py-16 text-white md:px-12">
@@ -42,7 +66,7 @@ export default function ProfilePage() {
 				<ProfileTabPillGroup
 					tabs={TABS}
 					activeTab={activeTab}
-					onTabChange={setActiveTab}
+					onTabChange={handleTabChange}
 					enableHashRouting
 				/>
 
@@ -55,6 +79,18 @@ export default function ProfilePage() {
 						data-testid="portfolio-holdings-panel"
 					>
 						<ReferralLinkPanel initialKeyId={keys[0].id} keys={keys} />
+					</section>
+				)}
+
+				{/* Staking / protocol revenue panel */}
+				{activeTab === 'staking' && (
+					<section
+						id="profile-panel-staking"
+						role="tabpanel"
+						aria-labelledby="profile-tab-staking"
+						data-testid="portfolio-staking-panel"
+					>
+						<ProtocolRevenueClaim walletAddress={DEMO_WALLET} />
 					</section>
 				)}
 
