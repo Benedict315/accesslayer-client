@@ -1,6 +1,7 @@
 import RootLayout from './components/common/RootLayout';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
+import MarketplacePage from './pages/MarketplacePage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import CreatorDetailPage from './pages/CreatorDetailPage';
 import CreatorDashboardPage from './pages/CreatorDashboardPage';
@@ -23,6 +24,10 @@ export const routes = [
 			{
 				path: '/creators',
 				element: <HomePage />,
+			},
+			{
+				path: '/marketplace',
+				element: <MarketplacePage />,
 			},
 			{
 				path: '/leaderboard',
