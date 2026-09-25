@@ -28,6 +28,8 @@ export const queryKeys = {
 			['creators', creatorId, 'activity'] as const,
 		twap: (creatorId: string) =>
 			['creators', creatorId, 'twap', '24h'] as const,
+		stats: (creatorId: string) =>
+			['creators', creatorId, 'stats'] as const,
 		curveConfig: (creatorId: string) =>
 			['creators', creatorId, 'curve-config'] as const,
 		keyConfig: (creatorId: string) =>
@@ -59,6 +61,8 @@ export const queryKeys = {
 	},
 	admin: {
 		oracleCallers: () => ['admin', 'oracle', 'callers'] as const,
+		multiSigPending: () => ['admin', 'multisig', 'pending'] as const,
+		multiSigHistory: () => ['admin', 'multisig', 'history'] as const,
 	},
 	governance: {
 		all: () => ['governance'] as const,
