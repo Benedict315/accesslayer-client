@@ -27,8 +27,8 @@ export interface BondingCurveDataPoint {
 }
 
 interface BondingCurveChartProps {
-	currentSupply: number;
-	currentPriceStroops: number;
+	currentSupply?: number;
+	currentPriceStroops?: number;
 	buyQuantity?: number;
 	className?: string;
 	customMilestones?: Omit<BondingCurveMilestone, 'priceXLM'>[];
@@ -55,8 +55,8 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<
 };
 
 const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
-	currentSupply,
-	currentPriceStroops,
+	currentSupply = 0,
+	currentPriceStroops = 0,
 	buyQuantity = 0,
 	className,
 	customMilestones,
