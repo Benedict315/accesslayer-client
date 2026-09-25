@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage';
 import FollowingPage from './pages/FollowingPage';
 import ComparePage from './pages/ComparePage';
 import GovernancePage from './pages/GovernancePage';
+import ProposalDetailPage from './pages/ProposalDetailPage';
 
 export const routes = [
 	{
@@ -63,6 +64,10 @@ export const routes = [
 			{
 				path: '/governance',
 				element: <GovernancePage />,
+			},
+			{
+				path: '/governance/:proposalId',
+				element: <ProposalDetailPage />,
 			},
 			{
 				path: '/admin/dashboard',

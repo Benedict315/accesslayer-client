@@ -56,5 +56,7 @@ export const queryKeys = {
 		proposals: (creatorId?: string) =>
 			['governance', 'proposals', creatorId ?? null] as const,
 		proposal: (id: string) => ['governance', 'proposal', id] as const,
+		proposalVotes: (id: string) =>
+			['governance', 'proposal', id, 'votes'] as const,
 	},
 } as const;
