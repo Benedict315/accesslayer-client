@@ -8,6 +8,7 @@
  */
 
 import type { GetCoursesParams } from '@/services/course.service';
+import type { VolumeWindow } from '@/services/leaderboard.service';
 
 export const queryKeys = {
 	creatorProfile: {
@@ -27,8 +28,15 @@ export const queryKeys = {
 			['creators', creatorId, 'activity'] as const,
 		twap: (creatorId: string) =>
 			['creators', creatorId, 'twap', '24h'] as const,
+		stats: (creatorId: string) =>
+			['creators', creatorId, 'stats'] as const,
 		curveConfig: (creatorId: string) =>
 			['creators', creatorId, 'curve-config'] as const,
+		discovery: {
+			all: () => ['creators', 'discovery'] as const,
+			trending: () => ['creators', 'discovery', 'trending'] as const,
+			newListings: () => ['creators', 'discovery', 'newListings'] as const,
+		},
 	},
 	wallet: {
 		holdings: (address: string) => ['wallet', address, 'holdings'] as const,
@@ -46,10 +54,13 @@ export const queryKeys = {
 	},
 	leaderboard: {
 		all: () => ['leaderboard'] as const,
-		volume: () => ['leaderboard', 'volume'] as const,
+		volume: (window: VolumeWindow = '24h') =>
+			['leaderboard', 'volume', window] as const,
 	},
 	admin: {
 		oracleCallers: () => ['admin', 'oracle', 'callers'] as const,
+		multiSigPending: () => ['admin', 'multisig', 'pending'] as const,
+		multiSigHistory: () => ['admin', 'multisig', 'history'] as const,
 	},
 	governance: {
 		all: () => ['governance'] as const,
@@ -60,5 +71,9 @@ export const queryKeys = {
 	staker: {
 		protocolRevenue: (wallet: string) =>
 			['staker', wallet, 'protocol-revenue'] as const,
+	},
+	search: {
+		all: () => ['search'] as const,
+		query: (q: string) => ['search', q] as const,
 	},
 } as const;

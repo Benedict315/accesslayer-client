@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { BarChart2, Clock, Coins } from 'lucide-react';
+import { BarChart2, Clock, Coins, Activity } from 'lucide-react';
 import ReferralLinkPanel from '@/components/common/ReferralLinkPanel';
 import TradeHistoryTable from '@/components/common/TradeHistoryTable';
 import ProtocolRevenueClaim from '@/components/common/ProtocolRevenueClaim';
 import ProtocolRevenueDistributionTable from '@/components/common/ProtocolRevenueDistributionTable';
+import WalletActivityFeed from '@/components/common/WalletActivityFeed';
 import { ProfileTabPillGroup } from '@/components/common/ProfileTabPill';
 import { useProfileStore } from '@/hooks/useProfileStore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -14,6 +15,7 @@ const TABS = [
 	{ label: 'Holdings', value: 'holdings', icon: <BarChart2 /> },
 	{ label: 'Staking', value: 'staking', icon: <Coins /> },
 	{ label: 'Trade History', value: 'trade-history', icon: <Clock /> },
+	{ label: 'Activity', value: 'activity', icon: <Activity /> },
 ];
 
 const STAKING_SUBTABS = [
@@ -33,6 +35,8 @@ const keys = [
 	{ id: 'gamma', label: 'Gamma Key' },
 ];
 
+const VALID_TABS = TABS.map(t => t.value);
+
 export default function ProfilePage() {
 	const profile = useProfileStore(state => state.profile);
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -40,15 +44,15 @@ export default function ProfilePage() {
 	const requestedSubTab = searchParams.get('subtab');
 
 	const [activeTabState, setActiveTabState] = useState(
-		requestedTab === 'staking' || requestedTab === 'trade-history'
-			? requestedTab
+		VALID_TABS.includes(requestedTab ?? '')
+			? (requestedTab as string)
 			: 'holdings'
 	);
 	const [stakingSubTabState, setStakingSubTabState] = useState(
 		requestedSubTab === 'protocol-revenue' ? 'protocol-revenue' : 'claim'
 	);
 
-	const activeTab = TABS.some(tab => tab.value === requestedTab)
+	const activeTab = VALID_TABS.includes(requestedTab ?? '')
 		? (requestedTab as string)
 		: activeTabState;
 
@@ -197,6 +201,29 @@ export default function ProfilePage() {
 							</div>
 
 							<TradeHistoryTable walletAddress={DEMO_WALLET} />
+						</div>
+					</section>
+				)}
+
+				{/* Activity feed panel */}
+				{activeTab === 'activity' && (
+					<section
+						id="profile-panel-activity"
+						role="tabpanel"
+						aria-labelledby="profile-tab-activity"
+						data-testid="portfolio-activity-panel"
+					>
+						<div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-8">
+							<div className="mb-6">
+								<h2 className="font-grotesque text-2xl font-bold text-white">
+									Wallet Activity
+								</h2>
+								<p className="mt-1 text-sm text-white/65">
+									All trading, staking, and governance events for your wallet
+								</p>
+							</div>
+
+							<WalletActivityFeed address={DEMO_WALLET} />
 						</div>
 					</section>
 				)}
