@@ -57,6 +57,8 @@ export const queryKeys = {
 	},
 	admin: {
 		oracleCallers: () => ['admin', 'oracle', 'callers'] as const,
+		multiSigPending: () => ['admin', 'multisig', 'pending'] as const,
+		multiSigHistory: () => ['admin', 'multisig', 'history'] as const,
 	},
 	governance: {
 		all: () => ['governance'] as const,
