@@ -5,9 +5,13 @@ import { useCreatorDetail } from '@/hooks/useCreators';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-vi.mock('@/hooks/useCreators', () => ({
-	useCreatorDetail: vi.fn(),
-}));
+vi.mock('@/hooks/useCreators', async importOriginal => {
+	const original = await importOriginal<typeof import('@/hooks/useCreators')>();
+	return {
+		...original,
+		useCreatorDetail: vi.fn(),
+	};
+});
 
 vi.mock('@/hooks/useCreatorProfileStaleIndicator', () => ({
 	useCreatorProfileStaleIndicator: () => ({

@@ -164,6 +164,15 @@ export interface KeyTwap {
 	window?: string;
 }
 
+export interface KeyBuybackInfo {
+	keyId: string;
+	deprecated: boolean;
+	buybackPriceStroops: number;
+	expiryDate: string;
+	terms?: string;
+	isActive?: boolean;
+}
+
 class CourseService extends BaseApiService {
 	private readonly PROFILE_CACHE_TTL = 30000; // 30 seconds
 
@@ -399,6 +408,18 @@ class CourseService extends BaseApiService {
 		try {
 			const response = await this.api.get<APIResponse<GraduatedCurveConfig>>(
 				`/keys/${keyId}/curve-config`
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get key buyback info - GET /keys/:keyId/buyback
+	async getKeyBuyback(keyId: string): Promise<KeyBuybackInfo> {
+		try {
+			const response = await this.api.get<APIResponse<KeyBuybackInfo>>(
+				`/keys/${keyId}/buyback`
 			);
 			return response.data.data;
 		} catch (error) {
