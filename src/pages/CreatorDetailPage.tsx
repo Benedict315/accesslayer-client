@@ -39,6 +39,8 @@ import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyTwap } from '@/hooks/useKeyTwap';
+import { useKeyStats } from '@/hooks/useKeyStats';
+import KeyStatsPanel from '@/components/common/KeyStatsPanel';
 import Skeleton from '@/components/ui/skeleton';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -95,6 +97,11 @@ function CreatorDetailPageContent() {
 	const nextBuyAllowedAt =
 		userPosition?.nextBuyAllowedAt ?? creator?.nextBuyAllowedAt ?? null;
 	const { data: twap, isLoading: isTwapLoading } = useKeyTwap(id || '');
+	const {
+		data: keyStats,
+		isLoading: isKeyStatsLoading,
+		isError: isKeyStatsError,
+	} = useKeyStats(id || '');
 
 	// Track stale data indicator
 	const { shouldShowBadge, handleRefetch } = useCreatorProfileStaleIndicator(
@@ -280,6 +287,12 @@ function CreatorDetailPageContent() {
 				<div data-testid="creator-stat-cards">
 					<CreatorProfileStatRow items={statItems} />
 				</div>
+				{/* Key Stats Panel (#952) */}
+				<KeyStatsPanel
+					stats={keyStats}
+					isLoading={isKeyStatsLoading}
+					isError={isKeyStatsError}
+				/>
 				{/* Deprecation Notice and Buy Action on Key Detail Page */}
 				{isKeyDeprecated(creator) && (
 					<div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4">

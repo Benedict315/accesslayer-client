@@ -164,6 +164,25 @@ export interface KeyTwap {
 	window?: string;
 }
 
+/**
+ * Aggregated on-chain stats for a creator key (#952).
+ * Price and volume values are expressed in stroops.
+ */
+export interface KeyStats {
+	/** Current circulating key supply. */
+	supply: number | null;
+	/** Number of unique wallets holding at least one key. */
+	holderCount: number | null;
+	/** Trading volume over the last 24 hours, in stroops. */
+	volume24h: number | null;
+	/** Cumulative all-time trading volume, in stroops. */
+	totalVolume: number | null;
+	/** 1-hour time-weighted average price, in stroops. */
+	twap1h: number | null;
+	/** 24-hour time-weighted average price, in stroops. */
+	twap24h: number | null;
+}
+
 class CourseService extends BaseApiService {
 	private readonly PROFILE_CACHE_TTL = 30000; // 30 seconds
 
@@ -273,6 +292,18 @@ class CourseService extends BaseApiService {
 			const response = await this.api.get<APIResponse<KeyTwap>>(
 				`/keys/${keyId}/twap`,
 				{ params: { window } }
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get aggregated key stats - GET /keys/:keyId/stats
+	async getKeyStats(keyId: string): Promise<KeyStats> {
+		try {
+			const response = await this.api.get<APIResponse<KeyStats>>(
+				`/keys/${keyId}/stats`
 			);
 			return response.data.data;
 		} catch (error) {
