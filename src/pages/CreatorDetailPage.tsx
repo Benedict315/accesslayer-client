@@ -34,12 +34,14 @@ import { useWalletHoldings, useTradeMutation } from '@/hooks/useWallet';
 import CoCreatorSection from '@/components/creator/CoCreatorSection';
 import ShareTwitterButton from '@/components/common/ShareTwitterButton';
 import TradeDialog from '@/components/common/TradeDialog';
+import SpreadIndicator from '@/components/common/SpreadIndicator';
 import showToast from '@/utils/toast.util';
 import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyTwap } from '@/hooks/useKeyTwap';
 import { useKeyStats } from '@/hooks/useKeyStats';
+import { useKeyConfig } from '@/hooks/useKeyConfig';
 import KeyStatsPanel from '@/components/common/KeyStatsPanel';
 import Skeleton from '@/components/ui/skeleton';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -102,6 +104,11 @@ function CreatorDetailPageContent() {
 		isLoading: isKeyStatsLoading,
 		isError: isKeyStatsError,
 	} = useKeyStats(id || '');
+	// Live key config powers the bid-ask spread shown next to the buy
+	// action and inside the trade dialog (#951).
+	const { data: keyConfig, isLoading: isKeyConfigLoading } = useKeyConfig(
+		id || ''
+	);
 
 	// Track stale data indicator
 	const { shouldShowBadge, handleRefetch } = useCreatorProfileStaleIndicator(
