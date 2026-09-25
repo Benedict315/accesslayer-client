@@ -7,6 +7,7 @@ import CreatorDetailPage from './pages/CreatorDetailPage';
 import CreatorDashboardPage from './pages/CreatorDashboardPage';
 import NotificationsPage from './pages/NotificationsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import DiscoveryPage from './pages/DiscoveryPage';
 import ProfilePage from './pages/ProfilePage';
 import FollowingPage from './pages/FollowingPage';
 import ComparePage from './pages/ComparePage';
@@ -28,6 +29,14 @@ export const routes = [
 			{
 				path: '/marketplace',
 				element: <MarketplacePage />,
+			},
+			{
+				path: '/discovery',
+				element: <DiscoveryPage />,
+			},
+			{
+				path: '/discover',
+				element: <DiscoveryPage />,
 			},
 			{
 				path: '/leaderboard',
