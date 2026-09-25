@@ -10,6 +10,7 @@ vi.mock('@/hooks/useCreators', async importOriginal => {
 	return {
 		...original,
 		useCreatorDetail: vi.fn(),
+		useSetCoCreator: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 	};
 });
 
@@ -77,17 +78,23 @@ describe('CreatorDetailPage Skeleton Loading States', () => {
 		);
 
 		// Assert main dashboard skeleton is present
-		expect(screen.getByTestId('creator-dashboard-skeleton')).toBeInTheDocument();
+		expect(
+			screen.getByTestId('creator-dashboard-skeleton')
+		).toBeInTheDocument();
 
 		// Assert 4 stat card skeletons
-		const statCardSkeletons = screen.getAllByTestId('creator-stat-card-skeleton');
+		const statCardSkeletons = screen.getAllByTestId(
+			'creator-stat-card-skeleton'
+		);
 		expect(statCardSkeletons).toHaveLength(4);
 
 		// Assert chart skeleton placeholder
 		expect(screen.getByTestId('creator-chart-skeleton')).toBeInTheDocument();
 
 		// Assert 5 table row skeletons
-		const holderRowSkeletons = screen.getAllByTestId('creator-holder-row-skeleton');
+		const holderRowSkeletons = screen.getAllByTestId(
+			'creator-holder-row-skeleton'
+		);
 		expect(holderRowSkeletons).toHaveLength(5);
 	});
 
@@ -132,13 +139,17 @@ describe('CreatorDetailPage Skeleton Loading States', () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.queryByTestId('creator-dashboard-skeleton')).not.toBeInTheDocument();
+			expect(
+				screen.queryByTestId('creator-dashboard-skeleton')
+			).not.toBeInTheDocument();
 		});
 
 		// Assert real content is shown
 		expect(screen.getByText('Creator One Profile')).toBeInTheDocument();
 		expect(screen.getByTestId('creator-stat-cards')).toBeInTheDocument();
 		expect(screen.getByTestId('creator-chart-container')).toBeInTheDocument();
-		expect(screen.getByTestId('creator-holders-container')).toBeInTheDocument();
+		expect(
+			screen.getByTestId('creator-holders-container')
+		).toBeInTheDocument();
 	});
 });

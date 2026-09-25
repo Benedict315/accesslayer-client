@@ -8,6 +8,7 @@
  */
 
 import type { GetCoursesParams } from '@/services/course.service';
+import type { VolumeWindow } from '@/services/leaderboard.service';
 
 export const queryKeys = {
 	creatorProfile: {
@@ -31,6 +32,11 @@ export const queryKeys = {
 			['creators', creatorId, 'curve-config'] as const,
 		buyback: (creatorId: string) =>
 			['creators', creatorId, 'buyback'] as const,
+		discovery: {
+			all: () => ['creators', 'discovery'] as const,
+			trending: () => ['creators', 'discovery', 'trending'] as const,
+			newListings: () => ['creators', 'discovery', 'newListings'] as const,
+		},
 	},
 	wallet: {
 		holdings: (address: string) => ['wallet', address, 'holdings'] as const,
@@ -48,7 +54,8 @@ export const queryKeys = {
 	},
 	leaderboard: {
 		all: () => ['leaderboard'] as const,
-		volume: () => ['leaderboard', 'volume'] as const,
+		volume: (window: VolumeWindow = '24h') =>
+			['leaderboard', 'volume', window] as const,
 	},
 	admin: {
 		oracleCallers: () => ['admin', 'oracle', 'callers'] as const,
@@ -62,5 +69,9 @@ export const queryKeys = {
 	staker: {
 		protocolRevenue: (wallet: string) =>
 			['staker', wallet, 'protocol-revenue'] as const,
+	},
+	search: {
+		all: () => ['search'] as const,
+		query: (q: string) => ['search', q] as const,
 	},
 } as const;
