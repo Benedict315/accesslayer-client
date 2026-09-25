@@ -39,6 +39,8 @@ import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyTwap } from '@/hooks/useKeyTwap';
+import { useKeyConfig } from '@/hooks/useKeyConfig';
+import SpreadIndicator from '@/components/common/SpreadIndicator';
 import Skeleton from '@/components/ui/skeleton';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -95,6 +97,11 @@ function CreatorDetailPageContent() {
 	const nextBuyAllowedAt =
 		userPosition?.nextBuyAllowedAt ?? creator?.nextBuyAllowedAt ?? null;
 	const { data: twap, isLoading: isTwapLoading } = useKeyTwap(id || '');
+	// Live key config drives the bid-ask spread shown on the trading surfaces
+	// (#951). React Query keeps it in sync as the key configuration changes.
+	const { data: keyConfig, isLoading: isKeyConfigLoading } = useKeyConfig(
+		id || ''
+	);
 
 	// Track stale data indicator
 	const { shouldShowBadge, handleRefetch } = useCreatorProfileStaleIndicator(
@@ -296,6 +303,15 @@ function CreatorDetailPageContent() {
 								? 'Key is deprecated. New buys are disabled.'
 								: 'Purchase keys for this creator.'}
 						</p>
+						{/* Configurable bid-ask spread between buy and sell price (#951) */}
+						<SpreadIndicator
+							className="mt-2"
+							buyPriceStroops={keyConfig?.buyPriceStroops}
+							sellPriceStroops={keyConfig?.sellPriceStroops}
+							spreadStroops={keyConfig?.spreadStroops}
+							spreadBps={keyConfig?.spreadBps}
+							isLoading={isKeyConfigLoading}
+						/>
 					</div>
 					<Button
 						disabled={isKeyDeprecated(creator)}
@@ -473,6 +489,8 @@ function CreatorDetailPageContent() {
 						currentSupply={creator.creatorShareSupply}
 						maxBuyQuantity={creator.maxBuyQuantity}
 						launchPenaltyBps={creator.launchPenaltyBps}
+						keyConfig={keyConfig}
+						isKeyConfigLoading={isKeyConfigLoading}
 						onOpenChange={setBuyDialogOpen}
 						onConfirm={handleConfirmBuy}
 						isSubmitting={tradeSubmitting}
