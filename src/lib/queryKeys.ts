@@ -61,4 +61,8 @@ export const queryKeys = {
 		protocolRevenue: (wallet: string) =>
 			['staker', wallet, 'protocol-revenue'] as const,
 	},
+	search: {
+		all: () => ['search'] as const,
+		query: (q: string) => ['search', q] as const,
+	},
 } as const;
