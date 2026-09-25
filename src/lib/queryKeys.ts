@@ -8,6 +8,7 @@
  */
 
 import type { GetCoursesParams } from '@/services/course.service';
+import type { VolumeWindow } from '@/services/leaderboard.service';
 
 export const queryKeys = {
 	creatorProfile: {
@@ -46,7 +47,8 @@ export const queryKeys = {
 	},
 	leaderboard: {
 		all: () => ['leaderboard'] as const,
-		volume: () => ['leaderboard', 'volume'] as const,
+		volume: (window: VolumeWindow = '24h') =>
+			['leaderboard', 'volume', window] as const,
 	},
 	admin: {
 		oracleCallers: () => ['admin', 'oracle', 'callers'] as const,
