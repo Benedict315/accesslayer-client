@@ -108,6 +108,26 @@ export interface GraduatedCurveConfig {
 	milestones?: CurveMilestone[];
 }
 
+/**
+ * Live trading configuration for a single creator key (#951).
+ *
+ * Returned by `GET /keys/:keyId/config` and used to surface the bid-ask
+ * spread between the current buy (ask) and sell (bid) price. All prices are
+ * in stroops (1 XLM = 10,000,000 stroops).
+ */
+export interface KeyConfig {
+	/** Key this config belongs to, when the backend echoes it back. */
+	keyId?: string;
+	/** Current price to buy one key, in stroops. */
+	buyPriceStroops?: number | null;
+	/** Current price to sell one key, in stroops. */
+	sellPriceStroops?: number | null;
+	/** Absolute spread (buy - sell) in stroops, when reported explicitly. */
+	spreadStroops?: number | null;
+	/** Spread expressed in basis points of the buy price, when reported. */
+	spreadBps?: number | null;
+}
+
 export type CourseSortOption =
 	'volume_desc' | 'price_asc' | 'price_desc' | 'newest';
 
@@ -451,6 +471,11 @@ class CourseService extends BaseApiService {
 		try {
 			const response = await this.api.get<APIResponse<KeyBuybackInfo>>(
 				`/keys/${keyId}/buyback`
+	// Get live key trading config - GET /keys/:keyId/config (#951)
+	async getKeyConfig(keyId: string): Promise<KeyConfig> {
+		try {
+			const response = await this.api.get<APIResponse<KeyConfig>>(
+				`/keys/${keyId}/config`
 			);
 			return response.data.data;
 		} catch (error) {

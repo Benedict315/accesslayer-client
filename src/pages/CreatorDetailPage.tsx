@@ -34,12 +34,14 @@ import { useWalletHoldings, useTradeMutation } from '@/hooks/useWallet';
 import CoCreatorSection from '@/components/creator/CoCreatorSection';
 import ShareTwitterButton from '@/components/common/ShareTwitterButton';
 import TradeDialog from '@/components/common/TradeDialog';
+import SpreadIndicator from '@/components/common/SpreadIndicator';
 import showToast from '@/utils/toast.util';
 import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useKeyTwap } from '@/hooks/useKeyTwap';
 import { useKeyStats } from '@/hooks/useKeyStats';
+import { useKeyConfig } from '@/hooks/useKeyConfig';
 import KeyStatsPanel from '@/components/common/KeyStatsPanel';
 import Skeleton from '@/components/ui/skeleton';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -108,6 +110,11 @@ function CreatorDetailPageContent() {
 		isLoading: isKeyStatsLoading,
 		isError: isKeyStatsError,
 	} = useKeyStats(id || '');
+	// Live key config powers the bid-ask spread shown next to the buy
+	// action and inside the trade dialog (#951).
+	const { data: keyConfig, isLoading: isKeyConfigLoading } = useKeyConfig(
+		id || ''
+	);
 
 	// Track stale data indicator
 	const { shouldShowBadge, handleRefetch } = useCreatorProfileStaleIndicator(
@@ -325,6 +332,15 @@ function CreatorDetailPageContent() {
 								? 'Key is deprecated. New buys are disabled.'
 								: 'Purchase keys for this creator.'}
 						</p>
+						{/* Configurable bid-ask spread between buy and sell price (#951) */}
+						<SpreadIndicator
+							className="mt-2"
+							buyPriceStroops={keyConfig?.buyPriceStroops}
+							sellPriceStroops={keyConfig?.sellPriceStroops}
+							spreadStroops={keyConfig?.spreadStroops}
+							spreadBps={keyConfig?.spreadBps}
+							isLoading={isKeyConfigLoading}
+						/>
 					</div>
 					<Button
 						disabled={isKeyDeprecated(creator)}
@@ -518,6 +534,8 @@ function CreatorDetailPageContent() {
 						currentSupply={creator.creatorShareSupply}
 						maxBuyQuantity={creator.maxBuyQuantity}
 						launchPenaltyBps={creator.launchPenaltyBps}
+						keyConfig={keyConfig}
+						isKeyConfigLoading={isKeyConfigLoading}
 						onOpenChange={setBuyDialogOpen}
 						onConfirm={handleConfirmBuy}
 						isSubmitting={tradeSubmitting}

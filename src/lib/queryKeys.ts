@@ -34,6 +34,8 @@ export const queryKeys = {
 			['creators', creatorId, 'curve-config'] as const,
 		buyback: (creatorId: string) =>
 			['creators', creatorId, 'buyback'] as const,
+		keyConfig: (creatorId: string) =>
+			['creators', creatorId, 'key-config'] as const,
 		discovery: {
 			all: () => ['creators', 'discovery'] as const,
 			trending: () => ['creators', 'discovery', 'trending'] as const,
@@ -69,6 +71,8 @@ export const queryKeys = {
 		proposals: (creatorId?: string) =>
 			['governance', 'proposals', creatorId ?? null] as const,
 		proposal: (id: string) => ['governance', 'proposal', id] as const,
+		proposalVotes: (id: string) =>
+			['governance', 'proposal', id, 'votes'] as const,
 	},
 	staker: {
 		protocolRevenue: (wallet: string) =>

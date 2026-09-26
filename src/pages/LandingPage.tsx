@@ -76,6 +76,7 @@ import ScrollToTop from '@/components/common/ScrollToTop';
 import SectionErrorBoundary from '@/components/common/SectionErrorBoundary';
 import StaleDataWarning from '@/components/common/StaleDataWarning';
 import { useScrollPreservation } from '@/hooks/useScrollPreservation';
+import { useKeyConfig } from '@/hooks/useKeyConfig';
 import { useStaleData } from '@/hooks/useStaleData';
 import { useIdleRefreshPrompt } from '@/hooks/useIdleRefreshPrompt';
 import IdleRefreshPrompt from '@/components/common/IdleRefreshPrompt';
@@ -697,6 +698,10 @@ function LandingPage() {
 	// fall back to the demo featured creator. This keeps the profile panel
 	// reactive to backend updates (supply, price, etc.).
 	const featuredCreator = creators.length > 0 ? creators[0] : DEMO_CREATORS[0];
+	// Live key config powers the bid-ask spread in the quick-trade modal
+	// (#951) and refetches as the key configuration changes.
+	const { data: featuredKeyConfig, isLoading: isFeaturedKeyConfigLoading } =
+		useKeyConfig(featuredCreator?.id);
 
 	useEffect(() => {
 		if (pendingScrollRestoreRef.current == null) return;
@@ -2021,6 +2026,8 @@ function LandingPage() {
 					currentLedger={featuredCreator?.currentLedger}
 					launchPenaltyBps={featuredCreator?.launchPenaltyBps}
 					maxBuyQuantity={featuredCreator?.maxBuyQuantity ?? null}
+					keyConfig={featuredKeyConfig}
+					isKeyConfigLoading={isFeaturedKeyConfigLoading}
 					isSubmitting={tradeSubmitting}
 					onOpenChange={setTradeDialogOpen}
 					onConfirm={handleConfirmTrade}
