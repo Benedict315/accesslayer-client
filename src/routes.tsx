@@ -80,6 +80,18 @@ export const routes = [
 				element: <GovernancePage />,
 			},
 			{
+				path: '/governance/:proposalId',
+				element: <ProposalDetailPage />,
+			},
+			{
+				path: '/referrals',
+				element: <ReferralDashboardPage />,
+			},
+			{
+				path: '/create-key',
+				element: <CreateCreatorKeyPage />,
+			},
+			{
 				path: '/admin/dashboard',
 				element: <AdminDashboardPage />,
 			},
