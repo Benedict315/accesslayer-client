@@ -471,6 +471,13 @@ class CourseService extends BaseApiService {
 		try {
 			const response = await this.api.get<APIResponse<KeyBuybackInfo>>(
 				`/keys/${keyId}/buyback`
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
 	// Get live key trading config - GET /keys/:keyId/config (#951)
 	async getKeyConfig(keyId: string): Promise<KeyConfig> {
 		try {
