@@ -32,6 +32,8 @@ export const queryKeys = {
 			['creators', creatorId, 'stats'] as const,
 		curveConfig: (creatorId: string) =>
 			['creators', creatorId, 'curve-config'] as const,
+		keyConfig: (creatorId: string) =>
+			['creators', creatorId, 'key-config'] as const,
 		discovery: {
 			all: () => ['creators', 'discovery'] as const,
 			trending: () => ['creators', 'discovery', 'trending'] as const,
