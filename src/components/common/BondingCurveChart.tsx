@@ -1,12 +1,12 @@
 import React from 'react';
 import {
+	ResponsiveContainer,
 	LineChart,
 	Line,
 	XAxis,
 	YAxis,
 	CartesianGrid,
 	Tooltip,
-	ResponsiveContainer,
 	ReferenceLine,
 	ReferenceArea,
 } from 'recharts';
@@ -21,12 +21,21 @@ import {
 import { formatDisplayKeyPrice } from '@/utils/keyPriceDisplay.utils';
 import { formatCompactNumber } from '@/utils/numberFormat.utils';
 
+export interface BondingCurveDataPoint {
+	supply: number;
+	priceXLM: number;
+	isCurrent?: boolean;
+}
+
 interface BondingCurveChartProps {
-	currentSupply: number;
-	currentPriceStroops: number;
+	currentSupply?: number;
+	currentPriceStroops?: number;
 	buyQuantity?: number;
 	className?: string;
 	customMilestones?: Omit<BondingCurveMilestone, 'priceXLM'>[];
+	data?: BondingCurveDataPoint[];
+	height?: number | `${number}%`;
+	width?: number | `${number}%`;
 }
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { priceStroops: number; supply: number; label?: string } }> }) => {
@@ -53,38 +62,77 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 	buyQuantity = 0,
 	className,
 	customMilestones,
+	data,
+	height = 300,
+	width = '100%',
 }) => {
-	const bondingCurveData = generateBondingCurveData(
-		currentSupply,
-		currentPriceStroops,
-		customMilestones
-	);
+	// Use data array if provided, otherwise generate from supply/price
+	let chartData: Array<{ supply: number; priceStroops: number; priceXLM: number; isMilestone?: boolean; label?: string; isCurrent?: boolean }>;
+	let priceImpactData: { currentPrice: number; newPrice: number; priceIncrease: number; priceIncreasePercent: number } | null = null;
+	let currentMilestoneRange: { current: BondingCurveMilestone; next?: BondingCurveMilestone } | null = null;
+	let effectiveCurrentSupply = currentSupply;
+	let effectiveCurrentPriceStroops = currentPriceStroops;
 
-	const chartData = generateChartDataPoints(bondingCurveData.milestones, 15);
+	if (data && data.length > 0) {
+		// Use provided data array (from upstream/dev implementation)
+		chartData = data.map(point => ({
+			supply: point.supply,
+			priceStroops: point.priceXLM * 10_000_000, // Convert XLM to stroops
+			priceXLM: point.priceXLM,
+			isCurrent: point.isCurrent,
+		}));
+		const currentPoint = data.find(d => d.isCurrent);
+		if (currentPoint) {
+			effectiveCurrentSupply = currentPoint.supply;
+			effectiveCurrentPriceStroops = currentPoint.priceXLM * 10_000_000;
+		}
+	} else {
+		// Use graduated curve implementation (from HEAD)
+		if (currentSupply === undefined || currentPriceStroops === undefined) {
+			return (
+				<div className={cn('flex items-center justify-center p-8 text-sm text-neutral-400 bg-neutral-900/50 rounded-lg border border-neutral-800', className)}>
+					No data
+				</div>
+			);
+		}
 
-	// Mark milestone points in the chart data
-	const chartDataWithMilestones = chartData.map(point => {
-		const milestone = bondingCurveData.milestones.find(m => m.supply === point.supply);
-		return {
-			...point,
-			isMilestone: !!milestone,
-			label: milestone?.label,
-		};
-	});
+		const bondingCurveData = generateBondingCurveData(
+			currentSupply,
+			currentPriceStroops,
+			customMilestones
+		);
 
-	// Calculate price impact if buy quantity is provided
-	const priceImpactData = buyQuantity > 0
-		? calculatePriceImpact(currentSupply, buyQuantity, customMilestones)
-		: null;
+		chartData = generateChartDataPoints(bondingCurveData.milestones, 15);
 
-	const currentMilestoneRange = findMilestoneRange(currentSupply, bondingCurveData.milestones);
+		// Mark milestone points in the chart data
+		chartData = chartData.map(point => {
+			const milestone = bondingCurveData.milestones.find(m => m.supply === point.supply);
+			return {
+				...point,
+				isMilestone: !!milestone,
+				label: milestone?.label,
+			};
+		});
+
+		// Calculate price impact if buy quantity is provided
+		priceImpactData = buyQuantity > 0
+			? calculatePriceImpact(currentSupply, buyQuantity, customMilestones)
+			: null;
+
+		currentMilestoneRange = findMilestoneRange(currentSupply, bondingCurveData.milestones);
+		effectiveCurrentSupply = currentSupply;
+		effectiveCurrentPriceStroops = currentPriceStroops;
+	}
+
+	const displayHeight = typeof height === 'number' ? `${height}px` : height;
+	const displayWidth = typeof width === 'number' ? `${width}px` : width;
 
 	return (
 		<div className={cn('w-full', className)}>
-			<div className="h-[300px] w-full">
+			<div style={{ height: displayHeight, width: displayWidth }}>
 				<ResponsiveContainer width="100%" height="100%">
 					<LineChart
-						data={chartDataWithMilestones}
+						data={chartData}
 						margin={{
 							top: 20,
 							right: 30,
@@ -126,30 +174,32 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 							activeDot={{ r: 6, fill: '#f59e0b', stroke: '#1e293b', strokeWidth: 2 }}
 						/>
 						{/* Current position marker */}
-						<ReferenceLine
-							x={currentSupply}
-							stroke="#10b981"
-							strokeWidth={2}
-							strokeDasharray="4 4"
-							label={{
-								value: 'Current',
-								position: 'top',
-								fill: '#10b981',
-								fontSize: 12,
-								fontWeight: 'bold',
-							}}
-						/>
-						{/* Price impact preview */}
-						{priceImpactData && (
+						{effectiveCurrentSupply !== undefined && (
+							<ReferenceLine
+								x={effectiveCurrentSupply}
+								stroke="#10b981"
+								strokeWidth={2}
+								strokeDasharray="4 4"
+								label={{
+									value: 'Current',
+									position: 'top',
+									fill: '#10b981',
+									fontSize: 12,
+									fontWeight: 'bold',
+								}}
+							/>
+						)}
+						{/* Price impact preview - only for graduated curve */}
+						{priceImpactData && effectiveCurrentSupply !== undefined && (
 							<>
 								<ReferenceArea
-									x1={currentSupply}
-									x2={currentSupply + buyQuantity}
+									x1={effectiveCurrentSupply}
+									x2={effectiveCurrentSupply + buyQuantity}
 									fill="#f59e0b"
 									fillOpacity={0.1}
 								/>
 								<ReferenceLine
-									x={currentSupply + buyQuantity}
+									x={effectiveCurrentSupply + buyQuantity}
 									stroke="#f59e0b"
 									strokeWidth={1}
 									strokeDasharray="4 4"
@@ -162,58 +212,63 @@ const BondingCurveChart: React.FC<BondingCurveChartProps> = ({
 								/>
 							</>
 						)}
-						{/* Milestone markers */}
-						{bondingCurveData.milestones.map((milestone) => (
-							<ReferenceLine
-								key={milestone.supply}
-								x={milestone.supply}
-								stroke="#f59e0b"
-								strokeWidth={1}
-								strokeDasharray="2 2"
-								opacity={0.3}
-							/>
-						))}
+						{/* Milestone markers - only for graduated curve */}
+						{chartData.some(point => point.isMilestone) && (
+							chartData.filter(point => point.isMilestone).map((milestone) => (
+								<ReferenceLine
+									key={milestone.supply}
+									x={milestone.supply}
+									stroke="#f59e0b"
+									strokeWidth={1}
+									strokeDasharray="2 2"
+									opacity={0.3}
+								/>
+							))
+						)}
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
 
-			{/* Legend and current position info */}
-			<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-				<div className="bg-white/5 rounded-lg p-3 border border-white/10">
-					<p className="text-xs text-white/60 mb-1">Current Supply</p>
-					<p className="text-lg font-bold text-white">
-						{formatCompactNumber(currentSupply)} keys
-					</p>
-					{currentMilestoneRange && (
-						<p className="text-xs text-white/40 mt-1">
-							{currentMilestoneRange.next
-								? `Next: ${currentMilestoneRange.next.label}`
-								: 'At final milestone'}
+			{/* Legend and current position info - only for graduated curve */}
+			{!data && effectiveCurrentSupply !== undefined && effectiveCurrentPriceStroops !== undefined && (
+				<div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+					<div className="bg-white/5 rounded-lg p-3 border border-white/10">
+						<p className="text-xs text-white/60 mb-1">Current Supply</p>
+						<p className="text-lg font-bold text-white">
+							{formatCompactNumber(effectiveCurrentSupply)} keys
 						</p>
-					)}
-				</div>
+						{currentMilestoneRange && (
+							<p className="text-xs text-white/40 mt-1">
+								{currentMilestoneRange.next
+									? `Next: ${currentMilestoneRange.next.label}`
+									: 'At final milestone'}
+							</p>
+						)}
+					</div>
 
-				<div className="bg-white/5 rounded-lg p-3 border border-white/10">
-					<p className="text-xs text-white/60 mb-1">Current Price</p>
-					<p className="text-lg font-bold text-amber-400">
-						{formatDisplayKeyPrice(currentPriceStroops)}
-					</p>
-				</div>
-
-				{priceImpactData && (
-					<div className="bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
-						<p className="text-xs text-amber-400/80 mb-1">Price Impact</p>
+					<div className="bg-white/5 rounded-lg p-3 border border-white/10">
+						<p className="text-xs text-white/60 mb-1">Current Price</p>
 						<p className="text-lg font-bold text-amber-400">
-							{formatDisplayKeyPrice(priceImpactData.newPrice)}
-						</p>
-						<p className="text-xs text-amber-400/60 mt-1">
-							+{priceImpactData.priceIncreasePercent.toFixed(1)}%
+							{formatDisplayKeyPrice(effectiveCurrentPriceStroops)}
 						</p>
 					</div>
-				)}
-			</div>
+
+					{priceImpactData && (
+						<div className="bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
+							<p className="text-xs text-amber-400/80 mb-1">Price Impact</p>
+							<p className="text-lg font-bold text-amber-400">
+								{formatDisplayKeyPrice(priceImpactData.newPrice)}
+							</p>
+							<p className="text-xs text-amber-400/60 mt-1">
+								+{priceImpactData.priceIncreasePercent.toFixed(1)}%
+							</p>
+						</div>
+					)}
+				</div>
+			)}
 		</div>
 	);
 };
 
 export default BondingCurveChart;
+export { BondingCurveChart as BondingCurveChartNamed };
