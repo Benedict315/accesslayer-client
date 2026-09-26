@@ -35,6 +35,8 @@ import CoCreatorSection from '@/components/creator/CoCreatorSection';
 import ShareTwitterButton from '@/components/common/ShareTwitterButton';
 import TradeDialog from '@/components/common/TradeDialog';
 import SpreadIndicator from '@/components/common/SpreadIndicator';
+import OraclePriceIndicator from '@/components/common/OraclePriceIndicator';
+import { useKeyOraclePrice } from '@/hooks/useKeyOraclePrice';
 import showToast from '@/utils/toast.util';
 import { getSignatureErrorMessage } from '@/utils/errorHandling.utils';
 import { usePurchaseConfetti } from '@/hooks/usePurchaseConfetti';
@@ -115,6 +117,17 @@ function CreatorDetailPageContent() {
 	const { data: keyConfig, isLoading: isKeyConfigLoading } = useKeyConfig(
 		id || ''
 	);
+	const spotPriceStroops = creator
+		? resolveCreatorKeyPriceStroops(creator)
+		: null;
+	// External oracle price shown alongside the bonding-curve spot price so a
+	// significant divergence is visible before trading (#967).
+	const {
+		comparison: oracleComparison,
+		freshness: oracleFreshness,
+		source: oracleSource,
+		isLoading: isOracleLoading,
+	} = useKeyOraclePrice(id || '', { spotPriceStroops });
 
 	// Track stale data indicator
 	const { shouldShowBadge, handleRefetch } = useCreatorProfileStaleIndicator(
@@ -340,6 +353,14 @@ function CreatorDetailPageContent() {
 							spreadStroops={keyConfig?.spreadStroops}
 							spreadBps={keyConfig?.spreadBps}
 							isLoading={isKeyConfigLoading}
+						/>
+						{/* Oracle reference price next to the curve spot price (#967) */}
+						<OraclePriceIndicator
+							className="mt-2"
+							comparison={oracleComparison}
+							freshness={oracleFreshness}
+							source={oracleSource}
+							isLoading={isOracleLoading}
 						/>
 					</div>
 					<Button

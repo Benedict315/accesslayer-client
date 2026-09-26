@@ -128,6 +128,66 @@ export interface KeyConfig {
 	spreadBps?: number | null;
 }
 
+/**
+ * Vesting schedule for a creator key's reserved creator allocation (#960).
+ *
+ * All amounts are expressed in XLM; dates are ISO timestamps. The contract
+ * remains the source of truth for `vestedAmountXlm` / `claimableXlm` — the
+ * client only derives progress percentages for the timeline.
+ */
+export interface KeyVestingSchedule {
+	keyId?: string;
+	/** Wallet the allocation is registered to (the key's creator). */
+	beneficiary?: string | null;
+	/** Total allocation subject to vesting, in XLM. */
+	totalAllocationXlm?: number | null;
+	/** Amount unlocked so far, in XLM. */
+	vestedAmountXlm?: number | null;
+	/** Amount already claimed, in XLM. */
+	claimedAmountXlm?: number | null;
+	/** Vested but unclaimed amount, in XLM. */
+	claimableXlm?: number | null;
+	/** ISO timestamp at which vesting starts. */
+	startAt?: string | null;
+	/** ISO timestamp after which tokens unlock. */
+	cliffAt?: string | null;
+	/** ISO timestamp at which the allocation is fully vested. */
+	endAt?: string | null;
+}
+
+/** A single completed claim of vested creator tokens (#960). */
+export interface KeyVestingClaim {
+	/** Stable identifier for the claim record. */
+	id: string;
+	/** Amount claimed, in XLM. */
+	amountXlm: number;
+	/** ISO timestamp of the claim. */
+	claimedAt: string;
+	/** Transaction hash of the claim transaction. */
+	transactionHash: string;
+}
+
+/**
+ * External oracle price for a creator key (#967).
+ *
+ * `priceStroops` is the oracle's view of the key's value, surfaced next to the
+ * bonding-curve spot price so a large divergence is visible before trading.
+ */
+export interface KeyOraclePrice {
+	keyId?: string;
+	/** Oracle price in stroops (1 XLM = 10,000,000 stroops). */
+	priceStroops?: number | null;
+	/** ISO timestamp the oracle last published this price. */
+	updatedAt?: string | null;
+	/** Feed identifier, shown in the tooltip explaining the source. */
+	source?: string | null;
+	/**
+	 * Maximum age, in seconds, after which the feed is considered stale.
+	 * Falls back to the default staleness window when not reported.
+	 */
+	maxAgeSeconds?: number | null;
+}
+
 export type CourseSortOption =
 	'volume_desc' | 'price_asc' | 'price_desc' | 'newest';
 
@@ -483,6 +543,51 @@ class CourseService extends BaseApiService {
 		try {
 			const response = await this.api.get<APIResponse<KeyConfig>>(
 				`/keys/${keyId}/config`
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get the creator vesting schedule - GET /keys/:keyId/vesting (#960)
+	async getKeyVesting(
+		keyId: string,
+		wallet?: string
+	): Promise<KeyVestingSchedule> {
+		try {
+			const response = await this.api.get<APIResponse<KeyVestingSchedule>>(
+				`/keys/${keyId}/vesting`,
+				{ params: wallet ? { wallet } : undefined }
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get the creator's vesting claim history - GET /keys/:keyId/vesting/claims (#960)
+	async getKeyVestingClaims(
+		keyId: string,
+		wallet: string
+	): Promise<KeyVestingClaim[]> {
+		try {
+			const response = await this.api.get<APIResponse<KeyVestingClaim[]>>(
+				`/keys/${keyId}/vesting/claims`,
+				{ params: { wallet } }
+			);
+			const data = response.data.data;
+			return Array.isArray(data) ? data : [];
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get the external oracle price - GET /keys/:keyId/oracle (#967)
+	async getKeyOraclePrice(keyId: string): Promise<KeyOraclePrice> {
+		try {
+			const response = await this.api.get<APIResponse<KeyOraclePrice>>(
+				`/keys/${keyId}/oracle`
 			);
 			return response.data.data;
 		} catch (error) {
