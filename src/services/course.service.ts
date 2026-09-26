@@ -184,6 +184,15 @@ export interface KeyTwap {
 	window?: string;
 }
 
+export interface KeyBuybackInfo {
+	keyId: string;
+	deprecated: boolean;
+	buybackPriceStroops: number;
+	expiryDate: string;
+	terms?: string;
+	isActive?: boolean;
+}
+
 /**
  * Aggregated on-chain stats for a creator key (#952).
  * Price and volume values are expressed in stroops.
@@ -450,6 +459,18 @@ class CourseService extends BaseApiService {
 		try {
 			const response = await this.api.get<APIResponse<GraduatedCurveConfig>>(
 				`/keys/${keyId}/curve-config`
+			);
+			return response.data.data;
+		} catch (error) {
+			throw this.handleError(error);
+		}
+	}
+
+	// Get key buyback info - GET /keys/:keyId/buyback
+	async getKeyBuyback(keyId: string): Promise<KeyBuybackInfo> {
+		try {
+			const response = await this.api.get<APIResponse<KeyBuybackInfo>>(
+				`/keys/${keyId}/buyback`
 			);
 			return response.data.data;
 		} catch (error) {

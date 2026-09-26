@@ -45,6 +45,9 @@ import { useKeyConfig } from '@/hooks/useKeyConfig';
 import KeyStatsPanel from '@/components/common/KeyStatsPanel';
 import Skeleton from '@/components/ui/skeleton';
 import { Tooltip } from '@/components/ui/tooltip';
+import KeyDeprecationBanner from '@/components/common/KeyDeprecationBanner';
+import KeyBuybackModal from '@/components/common/KeyBuybackModal';
+import type { KeyBuybackReceipt } from '@/hooks/useKeyBuyback';
 
 function CreatorDetailPageContent() {
 	usePurchaseConfetti();
@@ -53,6 +56,9 @@ function CreatorDetailPageContent() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [hasMounted, setHasMounted] = useState(false);
+	const [buybackModalOpen, setBuybackModalOpen] = useState(false);
+	const [recentSettlement, setRecentSettlement] =
+		useState<KeyBuybackReceipt | null>(null);
 	const {
 		data: creator,
 		isLoading,
@@ -261,6 +267,16 @@ function CreatorDetailPageContent() {
 					parentHref="/"
 					currentLabel={`${creator.title} Profile`}
 				/>
+				{/* Key deprecation notice & guaranteed buyback flow (#923) */}
+				{isKeyDeprecated(creator) && (
+					<KeyDeprecationBanner
+						creator={creator}
+						userAddress={userAddress}
+						holdingsCount={holdingsCount}
+						onInitiateBuyback={() => setBuybackModalOpen(true)}
+						recentSettlement={recentSettlement}
+					/>
+				)}
 				<div className="flex items-start gap-3">
 					<div className="min-w-0 flex-1">
 						<CreatorProfileHeader
@@ -492,6 +508,22 @@ function CreatorDetailPageContent() {
 					</h2>
 					<CreatorActivityFeed creatorId={creator.id} />
 				</div>
+				{/* Key Buyback Modal (#923) */}
+				{isKeyDeprecated(creator) && (
+					<KeyBuybackModal
+						open={buybackModalOpen}
+						onOpenChange={setBuybackModalOpen}
+						creatorId={creator.id}
+						creatorTitle={creator.title || creator.name || 'Creator Key'}
+						holdingsCount={holdingsCount}
+						buybackPriceStroops={resolveCreatorKeyPriceStroops(creator) ?? 0}
+						userAddress={userAddress}
+						onSettled={receipt => {
+							setRecentSettlement(receipt);
+						}}
+					/>
+				)}
+
 				{creator && (
 					<TradeDialog
 						open={buyDialogOpen}
